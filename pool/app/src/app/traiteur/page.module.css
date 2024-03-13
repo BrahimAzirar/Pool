@@ -1,0 +1,10 @@
+.checkpool {
+    background: #18191D !important;
+    outline: none !important;
+    border: 1px solid #fff !important;
+    border-radius: 5px !important;
+    -webkit-border-radius: 5px !important;
+    -moz-border-radius: 5px !important;
+    -ms-border-radius: 5px !important;
+    -o-border-radius: 5px !important;
+}

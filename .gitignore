@@ -1,0 +1,58 @@
+/pool_api/.phpunit.cache
+/pool_api/node_modules
+/pool_api/public/build
+/pool_api/public/hot
+/pool_api/public/storage
+/pool_api/storage/*.key
+/pool_api/vendor
+/pool_api/.env
+/pool_api/.env.backup
+/pool_api/.env.production
+/pool_api/.phpunit.result.cache
+/pool_api/Homestead.json
+/pool_api/Homestead.yaml
+/pool_api/auth.json
+/pool_api/npm-debug.log
+/pool_api/yarn-error.log
+/pool_api/.fleet
+/pool_api/.idea
+/pool_api/.vscode
+
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/pool/app/node_modules
+/pool/node_modules
+/pool/app/.pnp
+/pool/app/.pnp.js
+/pool/app/.yarn/install-state.gz
+
+# testing
+/pool/app/coverage
+
+# next.js
+/pool/app/.next/
+/pool/app/out/
+
+# production
+/pool/app/build
+
+# misc
+/pool/app/.DS_Store
+/pool/app/*.pem
+
+# debug
+/pool/app/npm-debug.log*
+/pool/app/yarn-debug.log*
+/pool/app/yarn-error.log*
+
+# local env files
+/pool/app/.env*.local
+
+# vercel
+/pool/app/.vercel
+
+# typescript
+/pool/app/*.tsbuildinfo
+/pool/app/next-env.d.ts
