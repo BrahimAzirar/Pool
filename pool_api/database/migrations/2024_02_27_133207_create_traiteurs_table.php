@@ -13,11 +13,7 @@ return new class extends Migration
     {
         Schema::create('traiteurs', function (Blueprint $table) {
             $table->id();
-            $table->string("references_traiteur");
-            $table->unsignedBigInteger('tool_id');
-            $table->foreign('tool_id')->references('id')->on('tools');
-            $table->double("price");
-            $table->double("qty");
+            $table->string("Name");
             $table->timestamps();
         });
     }

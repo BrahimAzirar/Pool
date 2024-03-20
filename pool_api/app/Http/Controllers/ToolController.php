@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tool;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ToolController extends Controller
@@ -15,28 +16,24 @@ class ToolController extends Controller
         return response()->json(Tool::latest()->get());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
-        Tool::create([
-            'name' => $request->name
-        ]);
-        return response()->json(true);
+        try {
+            $tool = new Tool();
+            $tool -> name = $request -> name;
+            $tool -> save();
+
+            return response() -> json([ "response" => $tool -> id ]);
+        } catch (\Exception $e) {
+            return response() -> json([ "response" => $e -> getMessage() ]);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Tool $tool)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Tool $tool)
     {
         $tool->name = $request->name;
@@ -44,9 +41,6 @@ class ToolController extends Controller
         return response()->json(true);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Tool $tool)
     {
         $tool->delete();

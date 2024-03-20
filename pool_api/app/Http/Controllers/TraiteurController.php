@@ -3,47 +3,94 @@
 namespace App\Http\Controllers;
 
 use App\Models\Traiteur;
+use App\Models\traiteur_tool;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use \Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class TraiteurController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
+    function updateTraiteur(Request $request) : JsonResponse {
+        try {
+            $id = $request->input('id');
+            $name = $request->input('name');
+
+            $Traiteur = Traiteur::find($id);
+
+            $Traiteur->Name = $name;
+            $Traiteur->save();
+
+            return response()->json(["response" => true]);
+        } catch (\Exception $e) {
+            return response()->json(["error" => $e->getMessage()]);
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+
+    function GetTraiteurs() : JsonResponse {
+        try {
+            $traiteurs = Traiteur::select("id", "Name") -> get();
+            return response() -> json([ "response" => $traiteurs ]);
+        } catch (\Exception $e) {
+            return response() -> json(["error" => $e -> getMessage()]);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Traiteur $traiteur)
-    {
-        //
+    function deleteTraiteur(int $id) : JsonResponse {
+        try {
+            Traiteur::destroy($id);
+            return response() -> json([ "response" => true ]);
+        } catch (\Exception $e) {
+            return response() -> json(["error" => $e -> getMessage()]);
+        }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Traiteur $traiteur)
-    {
-        //
+    public function AddTraiteurs (Request $request): JsonResponse {
+        try {
+            $TraiteurName = $request -> input('name');
+            $Traiteur = new Traiteur();
+
+            $Traiteur -> Name = $TraiteurName;
+
+            $Traiteur -> save();
+
+            return response() -> json([ "response" => $Traiteur -> id ]);
+        } catch (\Exception $e) {
+            return response() -> json(["error" => $e -> getMessage()]);
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Traiteur $traiteur)
+    public function _AddTraiteurs(Request $request)
     {
-        //
+        DB::beginTransaction();
+
+        try {
+            $data = [];
+            $Req_Data = $request->all();
+            $Traiteur = new Traiteur();
+
+            $Traiteur -> Name = $Req_Data['Trai_Name'];
+
+            $Traiteur -> save();
+
+            foreach ($request->all() as $item['data']) {
+                $data[] = [
+                    'tool_id' => $item['tool_id'],
+                    'qty' => $Traiteur -> id,
+                    'price' => $item['price'],
+                    'qty' => $item['quantity'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            traiteur_tool::insert($data);
+            DB::commit();
+            return response() -> json(["response" => true]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(["error" => $e->getMessage()]);
+        }
     }
 }
