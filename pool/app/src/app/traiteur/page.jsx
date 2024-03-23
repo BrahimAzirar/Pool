@@ -7,16 +7,31 @@ import styles from "./page.module.css";
 
 export default function traiteur() {
   const [TraiteurId, setTraiteurId] = useState(null);
-  const [UpdateTraiteurName, setUpdateTraiteurName] = useState(false);
   const [TraiteurName, setTraiteurName] = useState("");
   const [RegesteredTraiteurs, setRegesteredTraiteurs] = useState([]);
+  const [UpdateTraiteurName, setUpdateTraiteurName] = useState(false);
   const [Traiteurs, setTraiteurs] = useState([]);
   const [tools, setTools] = useState([]);
   const [name, setName] = useState("");
+  const [UpdateToolName, setUpdateToolName] = useState(false);
+  const [ToolId, setToolId] = useState(null);
 
   const TraiteurForm = useRef();
+  const TargetTraiteur = useRef();
+  const DateStart = useRef();
+  const DateEnd = useRef();
 
   useEffect(() => {
+    const fetchTool = async () => {
+      try {
+        const result = await (await axios.get("/api/tools")).data;
+        if (result.err) throw new Error(result.err);
+        setTools(result.response);
+      } catch (error) {
+        alert(error.message);
+      };
+    };
+
     const getAllTraiteurs = async () => {
       try {
         const result = await (await axios.get("/api/getAllTraiteurs")).data;
@@ -31,13 +46,26 @@ export default function traiteur() {
     getAllTraiteurs();
   }, []);
 
-  const editTools = (id) => {
-    
-    tools.map((item) => {
-      if (item.id == id) {
-        setName(item.name);
-      }
-    });
+  const editTools = async (e) => {
+    e.preventDefault();
+
+    try {
+      const data = new FormData();
+      data.append('toolName', name);
+      data.append('_method', 'PUT');
+      const result = await (await axios.post(`/api/tools/${ToolId}`, data)).data;
+      if (result.err) throw new Error(result.err);
+      if (result.response) {
+        setTools(prev => prev.map(ele => {
+          if (ele.id === ToolId) ele.name = name;
+          return ele;
+        }));
+
+        setName(""); setUpdateToolName(false);
+      };
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   const AddTool = async (e) => {
@@ -56,39 +84,42 @@ export default function traiteur() {
     }
   };
 
-  const AddTraiteur = (e) => {
+  const AddTraiteur = async (e) => {
     e.preventDefault();
-    const data = new FormData(TraiteurForm.current);
-    axios.post("/api/AddTraiteurs", data).then((res) => {
+    try {
+      const data = new FormData(TraiteurForm.current);
+      const result = await (await axios.post("/api/AddTraiteurs", data)).data;
+      if (result.err) throw new Error(result.err);
       setRegesteredTraiteurs([
         ...RegesteredTraiteurs,
         {
-          id: res.data.response,
+          id: result.response,
           Name: Array.from(data)[0][1],
         },
       ]);
 
       setTraiteurName("");
-    });
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
-  const deleteTools = (id) => {
-    axios.delete(`/api/tools/${id}`).then((response) => {
-      setName("");
-      fetchTool();
-    });
-  };
-
-  const fetchTool = () => {
-    axios.get("/api/tools").then((response) => {
-      setTools(response.data);
-    });
-  };
-
-  
-
-  const handleSubmit = (e) => {
+  const deleteTools = async (e, id) => {
     e.preventDefault();
+
+    try {
+      const result = await (await axios.delete(`/api/tools/${id}`)).data;
+      if (result.err) throw new Error(result.err);
+      if (result.response) {
+        setTools(prev => {
+          return prev.filter(ele => {
+            return ele.id !== id;
+          })
+        });
+      }
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   const checkSelected = (e) => {
@@ -101,6 +132,8 @@ export default function traiteur() {
         e.target.parentElement.nextElementSibling.nextElementSibling
           .nextElementSibling.children[0].value;
 
+      console.log({ tool_id, price, quantity });
+
       setTraiteurs([...Traiteurs, { tool_id, price, quantity }]);
     } else {
       setTraiteurs((prev) => {
@@ -109,17 +142,20 @@ export default function traiteur() {
     }
   };
 
-  const SendTraiteurs = (e) => {
+  const SendTraiteursTool = async (e) => {
     e.preventDefault();
 
-    axios
-      .post("/api/AddTraiteur", Traiteurs)
-      .then((response) => {
-        console.log("POST request successful:", response);
-      })
-      .catch((error) => {
-        console.error("Error making POST request:", error);
-      });
+    try {
+      const targetTraitreur = TargetTraiteur.current.value;
+      const dateStart = DateStart.current.value;
+      const dateEnd = DateEnd.current.value;
+      const data = { targetTraitreur, dateStart, dateEnd, Traiteurs };
+    
+      const result = await (await axios.post("/api/AddTraiteurTool", data)).data;
+      if (result.err) throw new Error(result.err);
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   const deleteTariteur = (id) => {
@@ -141,7 +177,7 @@ export default function traiteur() {
       data.append("id", TraiteurId);
     
       const result = await (await axios.post("/api/updateTraiteur", data)).data;
-      if (result.err) throw new Error(err);
+      if (result.err) throw new Error(result.err);
       if (result.response) {
         setRegesteredTraiteurs((prev) => {
           return prev.map((ele) => {
@@ -167,7 +203,7 @@ export default function traiteur() {
         </div>
       </nav>
       <div class="content">
-        <form method="Post" onSubmit={AddTool}>
+        <form>
           <div class="top-content">
             <div class="left-top-content">
               <p>Ajoute l'outil:</p>
@@ -181,7 +217,19 @@ export default function traiteur() {
               />
             </div>
           </div>
-          <input type="submit" value="Ajoute Outil" />
+          {UpdateToolName ? (
+            <input
+              type="submit"
+              value="Update Tool"
+              onClick={editTools}
+            />
+          ) : (
+            <input
+              type="submit"
+              value="Ajoute Outil"
+              onClick={AddTool}
+            />
+          )}
         </form>
         <form ref={TraiteurForm}>
           <div class="top-content">
@@ -267,7 +315,7 @@ export default function traiteur() {
               <Image width={10} height={10} src="/imgs/filter.png" alt="" />
             </div>
           </div>
-          <form action="" onSubmit={handleSubmit}>
+          <form>
             <div className="table-pool">
               <table className="table">
                 <thead>
@@ -306,10 +354,15 @@ export default function traiteur() {
                         />
                       </td>
                       <td>
-                        <button onClick={() => editTools(item.id)}>
+                        <button onClick={(e) => {
+                          e.preventDefault();
+                          setName(item.name);
+                          setUpdateToolName(true);
+                          setToolId(item.id);
+                        }}>
                           update
                         </button>
-                        <button onClick={() => deleteTools(item.id)}>
+                        <button onClick={(e) => deleteTools(e, item.id)}>
                           delete
                         </button>
                       </td>
@@ -319,7 +372,20 @@ export default function traiteur() {
               </table>
             </div>
             <div className="submit-traiteur">
-              <input type="submit" onClick={SendTraiteurs} />
+              <input type="submit" onClick={SendTraiteursTool} />
+            </div>
+            <div>
+              <select ref={TargetTraiteur}>
+                { RegesteredTraiteurs.map(ele => {
+                  return <option value={ele.id}>{ ele.Name }</option>;
+                }) }
+              </select>
+            </div>
+            <div>
+              <input type="date" ref={DateStart}/>
+            </div>
+            <div>
+              <input type="date" ref={DateEnd} />
             </div>
           </form>
         </div>

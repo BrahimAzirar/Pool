@@ -3,9 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Traiteur;
-use App\Models\traiteur_tool;
+use App\Models\traiteur_tools;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use \Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
@@ -23,7 +22,8 @@ class TraiteurController extends Controller
 
             return response()->json(["response" => true]);
         } catch (\Exception $e) {
-            return response()->json(["error" => $e->getMessage()]);
+            Log::error("The error in TraiteurController => updateTraiteur: ". $e -> getMessage());
+            return response() -> json(["err" => "An error in the server try later"]);
         }
     }
 
@@ -33,7 +33,8 @@ class TraiteurController extends Controller
             $traiteurs = Traiteur::select("id", "Name") -> get();
             return response() -> json([ "response" => $traiteurs ]);
         } catch (\Exception $e) {
-            return response() -> json(["error" => $e -> getMessage()]);
+            Log::error("The error in TraiteurController => GetTraiteurs: ". $e -> getMessage());
+            return response() -> json(["err" => "An error in the server try later"]);
         }
     }
 
@@ -42,7 +43,8 @@ class TraiteurController extends Controller
             Traiteur::destroy($id);
             return response() -> json([ "response" => true ]);
         } catch (\Exception $e) {
-            return response() -> json(["error" => $e -> getMessage()]);
+            Log::error("The error in TraiteurController => deleteTraiteur: ". $e -> getMessage());
+            return response() -> json(["err" => "An error in the server try later"]);
         }
     }
 
@@ -57,40 +59,40 @@ class TraiteurController extends Controller
 
             return response() -> json([ "response" => $Traiteur -> id ]);
         } catch (\Exception $e) {
-            return response() -> json(["error" => $e -> getMessage()]);
+            Log::error("The error in TraiteurController => AddTraiteurs: ". $e -> getMessage());
+            return response() -> json(["err" => "An error in the server try later"]);
         }
     }
 
-    public function _AddTraiteurs(Request $request)
-    {
-        DB::beginTransaction();
+    public function AddTraiteurTool(Request $request)
+{
+    try {
+        $data = [];
+        $Traiteurs = $request['Traiteurs'];
+        $dateEnd = $request['dateEnd'];
+        $dateStart = $request['dateStart'];
+        $targetTraitreur = $request['targetTraitreur'];
 
-        try {
-            $data = [];
-            $Req_Data = $request->all();
-            $Traiteur = new Traiteur();
+        foreach ($Traiteurs as $item) {
+            $data[] = [
+                "tool_id" => $item['tool_id'],
+                "traiteur_id" => $targetTraitreur,
+                "price" => $item['price'],
+                "qty" => $item['quantity'],
+                "dateStart" => $dateStart,
+                "dateEnd" => $dateEnd,
+            ];
+        };
 
-            $Traiteur -> Name = $Req_Data['Trai_Name'];
+        Log::alert($data);
 
-            $Traiteur -> save();
+        $insertedIds = traiteur_tools::insertGetId($data);
 
-            foreach ($request->all() as $item['data']) {
-                $data[] = [
-                    'tool_id' => $item['tool_id'],
-                    'qty' => $Traiteur -> id,
-                    'price' => $item['price'],
-                    'qty' => $item['quantity'],
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
-
-            traiteur_tool::insert($data);
-            DB::commit();
-            return response() -> json(["response" => true]);
-        } catch (\Exception $e) {
-            DB::rollback();
-            return response()->json(["error" => $e->getMessage()]);
-        }
+        return response()->json(["response" => $insertedIds]);
+    } catch (\Exception $e) {
+        Log::error("The error in TraiteurController => AddTraiteurTool: ". $e->getMessage());
+        return response()->json(["err" => "An error occurred on the server. Please try again later."], 500);
     }
+}
+
 }
