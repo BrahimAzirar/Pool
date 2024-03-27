@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Traiteur;
+use App\Models\dateEnd;
 use App\Models\traiteur_tools;
 use Illuminate\Http\Request;
 use \Illuminate\Http\JsonResponse;
@@ -64,35 +65,83 @@ class TraiteurController extends Controller
         }
     }
 
-    public function AddTraiteurTool(Request $request)
-{
-    try {
-        $data = [];
-        $Traiteurs = $request['Traiteurs'];
-        $dateEnd = $request['dateEnd'];
-        $dateStart = $request['dateStart'];
-        $targetTraitreur = $request['targetTraitreur'];
+    public function AddTraiteurTool(Request $request): JsonResponse
+    {
+        try {
+            $data = [];
+            $Traiteurs = $request->input('Traiteurs');
+            $dateEnd = $request->input('dateEnd');
+            $dateStart = $request->input('dateStart');
+            $targetTraitreur = $request->input('targetTraitreur');
 
-        foreach ($Traiteurs as $item) {
-            $data[] = [
-                "tool_id" => $item['tool_id'],
-                "traiteur_id" => $targetTraitreur,
-                "price" => $item['price'],
-                "qty" => $item['quantity'],
-                "dateStart" => $dateStart,
-                "dateEnd" => $dateEnd,
-            ];
-        };
+            foreach ($Traiteurs as $item) {
+                $data[] = [
+                    "tool_id" => $item['tool_id'],
+                    "traiteur_id" => $targetTraitreur,
+                    "price" => $item['price'],
+                    "qty" => $item['quantity'],
+                    "dateStart" => $dateStart,
+                    "dateEnd" => $dateEnd,
+                ];
+            }
 
-        Log::alert($data);
+            traiteur_tools::insert($data);
 
-        $insertedIds = traiteur_tools::insertGetId($data);
-
-        return response()->json(["response" => $insertedIds]);
-    } catch (\Exception $e) {
-        Log::error("The error in TraiteurController => AddTraiteurTool: ". $e->getMessage());
-        return response()->json(["err" => "An error occurred on the server. Please try again later."], 500);
+            return response()->json(["response" => true]);
+        } catch (\Exception $e) {
+            Log::error("The error in TraiteurController => AddTraiteurTool: ". $e->getMessage());
+            return response()->json(["err" => "An error occurred on the server. Please try again later."], 500);
+        }
     }
-}
 
+    function getAllTraiteursTools() : JsonResponse {
+        try {
+            return response() -> json(["response" => traiteur_tools::all()]);
+        } catch (\Exception $e) {
+            Log::error("The error in TraiteurController => getAllTraiteursTools: ". $e->getMessage());
+            return response()->json(["err" => "An error occurred on the server. Please try again later."], 500);
+        }
+    }
+
+    function deleteTraiteursTool($id) : JsonResponse {
+        try {
+            if (is_numeric($id)) {
+                traiteur_tools::destroy($id);
+                return response() -> json(["response" => true]);
+            };
+
+            return response() -> json(["response" => false]);
+        } catch (\Exception $e) {
+            Log::error("The error in TraiteurController => deleteTraiteursTool: ". $e->getMessage());
+            return response()->json(["err" => "An error occurred on the server. Please try again later."], 500);
+        }
+    }
+
+    function UpdateTraiteurTool(Request $request) : JsonResponse {
+        try {
+            $id = $request -> input('id');
+            $tool_id = $request -> input('tool_id');
+            $traiteur_id = $request -> input('traiteur_id');
+            $price = $request -> input('price');
+            $qty = $request -> input('qty');
+            $dateStart = $request -> input('dateStart');
+            $dateEnd = $request -> input('dateEnd');
+
+            $target = traiteur_tools::find($id);
+
+            $target -> tool_id = $tool_id;
+            $target -> traiteur_id = $traiteur_id;
+            $target -> price = $price;
+            $target -> qty = $qty;
+            $target -> dateStart = $dateStart;
+            $target -> dateEnd = $dateEnd;
+
+            $target -> save();
+
+            return response() -> json(["response" => true]);
+        } catch (\Exception $e) {
+            Log::error("The error in TraiteurController => UpdateTraiteurTool: ". $e->getMessage());
+            return response()->json(["err" => "An error occurred on the server. Please try again later."], 500);
+        }
+    }
 }

@@ -17,8 +17,8 @@ return new class extends Migration
             $table->unsignedBigInteger('traiteur_id');
             $table->double("price");
             $table->integer("qty");
-            $table->date("dateStart");
-            $table->date("dateEnd");
+            $table->dateTime("dateStart");
+            $table->dateTime("dateEnd");
             $table->foreign('tool_id')->references('id')->on('tools')->onDelete('cascade');
             $table->foreign('traiteur_id')->references('id')->on('traiteurs')->onDelete('cascade');
             $table->timestamps();

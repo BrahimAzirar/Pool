@@ -20,6 +20,10 @@ export default function RootLayout({ children }) {
                 </li>
                 <li>
                     <img src="imgs/grand_salle.png" alt=""/>
+                    <Link href="/clients">Clients</Link>
+                </li>
+                <li>
+                    <img src="imgs/grand_salle.png" alt=""/>
                     <Link href={"/grand_salle"}>Grand Salle</Link>
                 </li>
                 <li>
