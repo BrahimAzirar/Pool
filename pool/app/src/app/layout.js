@@ -46,6 +46,10 @@ export default function RootLayout({ children }) {
                     <img src="imgs/traiteur.png" alt=""/>
                     <Link href={"/traiteur"}>traiteur</Link>
                 </li>
+                <li>
+                    <img src="imgs/traiteur.png" alt=""/>
+                    <Link href={"/ReturnedTools"}>outils retournes</Link>
+                </li>
             </ul>
         </div>
         {children}

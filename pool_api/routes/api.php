@@ -44,5 +44,6 @@ Route::delete("/deleteTraiteur/{id}", [TraiteurController::class, "deleteTraiteu
 Route::post("/updateTraiteur", [TraiteurController::class, "updateTraiteur"]);
 Route::post("/AddTraiteurTool", [TraiteurController::class, "AddTraiteurTool"]);
 Route::get("/getAllTraiteursTools", [TraiteurController::class, "getAllTraiteursTools"]);
+Route::get("/getTargetTraiteurs/{id}", [TraiteurController::class, "getTargetTraiteurs"]);
 Route::delete("/deleteTraiteursTool/{id}", [TraiteurController::class, "deleteTraiteursTool"]);
 Route::post('/UpdateTraiteurTool', [TraiteurController::class, "UpdateTraiteurTool"]);

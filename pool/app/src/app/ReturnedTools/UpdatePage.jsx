@@ -7,11 +7,12 @@ export default function UpdateTraiteur_Tool({
   data,
   tools,
   traiteurs,
-  clients,
   callback1,
   callback2,
+  callback3,
+  callback4,
 }) {
-  const [Price, setPrice] = useState(data.price);
+  const [ReturnedQty, setReturnedQty] = useState(data.returnedQty);
   const [Quantite, setQuantite] = useState(data.qty);
   const [DateStart, setDateStart] = useState(data.dateStart);
   const [DateEnd, setDateEnd] = useState(data.dateEnd);
@@ -35,13 +36,18 @@ export default function UpdateTraiteur_Tool({
       if (result.err) throw new Error(result.err);
       if (result.response) {
         const convertedData = Object.fromEntries(req_data);
+        convertedData.traiteur_name = traiteurs.find(ele => ele.id == convertedData.traiteur_id).Name;
+        convertedData.tool_name = tools.find(ele => ele.id == convertedData.tool_id).name;
         callback2((prev) =>
           prev.map((ele) => {
-            if (ele.id == convertedData.id) return convertedData;
+            if (ele.id == convertedData.id)
+                return convertedData;
             return ele;
           })
         );
         callback1(false);
+        callback3([]);
+        callback4([]);
       }
     } catch (error) {
       alert(error.message);
@@ -51,26 +57,9 @@ export default function UpdateTraiteur_Tool({
   return (
     <div id="UpdateTraiteur_Tool">
       <div>
-        <img src="imgs/cancel.svg" alt="" onClick={() => callback1(false)} />
+        <img src="imgs/cancel.svg" alt="" onClick={() => callback1(false)}/>
       </div>
       <form ref={TargetForm}>
-        <div>
-          <select name="ClientId">
-            {clients.map((ele) => {
-              if (ele.id == data.ClientId)
-                return (
-                  <option value={ele.id} key={ele.id} selected>
-                    {ele.FirstName} {ele.LastName}
-                  </option>
-                );
-              return (
-                <option value={ele.id} key={ele.id}>
-                  {ele.FirstName} {ele.LastName}
-                </option>
-              );
-            })}
-          </select>
-        </div>
         <div>
           <select name="tool_id">
             {tools.map((ele) => {
@@ -108,17 +97,19 @@ export default function UpdateTraiteur_Tool({
         <div>
           <input
             type="number"
-            name="price"
-            value={Price}
-            onChange={(e) => setPrice(e.target.value)}
+            name="qty"
+            placeholder="Quantity"
+            value={Quantite}
+            onChange={(e) => setQuantite(e.target.value)}
           />
         </div>
         <div>
           <input
             type="number"
-            name="qty"
-            value={Quantite}
-            onChange={(e) => setQuantite(e.target.value)}
+            name="returnedQty"
+            placeholder="Returned Quantity"
+            value={ReturnedQty}
+            onChange={(e) => setReturnedQty(e.target.value)}
           />
         </div>
         <div>

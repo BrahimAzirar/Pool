@@ -106,7 +106,7 @@ export default function page() {
             <input
               type="text"
               className="salle"
-              name="CIN"
+              name="ClientCIN"
               placeholder="CIN"
               value={CIN}
               onChange={(e) => setCIN(e.target.value)}

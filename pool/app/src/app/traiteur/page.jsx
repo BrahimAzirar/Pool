@@ -20,11 +20,13 @@ export default function traiteur() {
   const [name, setName] = useState("");
   const [UpdateToolName, setUpdateToolName] = useState(false);
   const [ToolId, setToolId] = useState(null);
+  const [Clients, setClients] = useState([]);
 
   const TraiteurForm = useRef();
   const TargetTraiteur = useRef();
   const DateStart = useRef();
   const DateEnd = useRef();
+  const TargetClient = useRef();
 
   useEffect(() => {
     const fetchTool = async () => {
@@ -32,6 +34,16 @@ export default function traiteur() {
         const result = await (await axios.get("/api/tools")).data;
         if (result.err) throw new Error(result.err);
         setTools(result.response);
+      } catch (error) {
+        alert(error.message);
+      }
+    };
+
+    const GetAllClients = async () => {
+      try {
+        const result = await (await axios.get("/api/client")).data;
+        if (result.err) throw new Error(result.err);
+        setClients(result.response);
       } catch (error) {
         alert(error.message);
       }
@@ -61,6 +73,7 @@ export default function traiteur() {
 
     fetchTool();
     getAllTraiteurs();
+    GetAllClients();
     getAllTraiteursTools();
   }, []);
 
@@ -155,8 +168,6 @@ export default function traiteur() {
         e.target.parentElement.nextElementSibling.nextElementSibling
           .nextElementSibling.children[0].value;
 
-      console.log({ tool_id, price, quantity });
-
       setTraiteurs([...Traiteurs, { tool_id, price, quantity }]);
     } else {
       setTraiteurs((prev) => {
@@ -172,7 +183,8 @@ export default function traiteur() {
       const targetTraitreur = TargetTraiteur.current.value;
       const dateStart = DateStart.current.value;
       const dateEnd = DateEnd.current.value;
-      const data = { targetTraitreur, dateStart, dateEnd, Traiteurs };
+      const targetClient = TargetClient.current.value;
+      const data = { targetTraitreur, dateStart, dateEnd, Traiteurs, targetClient };
 
       const result = await (
         await axios.post("/api/AddTraiteurTool", data)
@@ -186,6 +198,7 @@ export default function traiteur() {
             id: LastId + idx + 1,
             tool_id,
             traiteur_id: targetTraitreur,
+            ClientId: targetClient,
             price,
             qty: quantity,
             dateStart,
@@ -267,6 +280,7 @@ export default function traiteur() {
           data={data_we_want_to_updated}
           tools={tools}
           traiteurs={RegesteredTraiteurs}
+          clients={Clients}
           callback1={setUpdateTraiteurTool}
           callback2={setTraiteurTools}
         />
@@ -448,6 +462,18 @@ export default function traiteur() {
                     </select>
                   </div>
                   <div>
+                    <select ref={TargetClient}>
+                      <option value={null}>Choose the client</option>
+                      {Clients.map(ele => {
+                        return (
+                          <option value={ele.id}>
+                            {ele.FirstName} {ele.LastName}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  <div>
                     <input type="datetime-local" ref={DateStart} />
                   </div>
                   <div>
@@ -474,6 +500,7 @@ export default function traiteur() {
                   <thead>
                     <tr>
                       <th>id</th>
+                      <th>client name</th>
                       <th>outil</th>
                       <th>traiteur</th>
                       <th>price</th>
@@ -485,9 +512,12 @@ export default function traiteur() {
                   </thead>
                   <tbody>
                     {TraiteurTools.map((item) => {
+                      const client = Clients.find((ele) => ele.id == item.ClientId);
+                      const { FirstName, LastName } = client || {};
                       return (
                         <tr key={item.id}>
                           <td>{item.id}</td>
+                          <td>{FirstName} {LastName}</td>
                           <td>
                             {tools.find((ele) => ele.id == item.tool_id).name}
                           </td>

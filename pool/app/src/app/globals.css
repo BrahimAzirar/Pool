@@ -216,11 +216,10 @@ input.salle {
 }
 
 #TraiteurActions {
-  width: 80%;
+  width: 88%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* margin: 0 auto; */
 }
 
 #TraiteurActions>div:first-of-type {
@@ -231,18 +230,20 @@ input.salle {
 }
 
 #TraiteurActions>div:first-of-type>div {
-  width: calc(90% / 3);
+  width: calc(90% / 4);
 }
 
 #TraiteurActions>div:first-of-type>div select,
-#UpdateTraiteur_Tool>form>div select {
+#UpdateTraiteur_Tool>form>div select,
+#ReturnedTools_Page > div:first-of-type select {
   cursor: pointer;
 }
 
 #TraiteurActions>div:first-of-type>div select,
 #TraiteurActions>div:first-of-type>div input,
 #UpdateTraiteur_Tool>form>div select,
-#UpdateTraiteur_Tool>form>div input {
+#UpdateTraiteur_Tool>form>div input,
+#ReturnedTools_Page > div:first-of-type select {
   width: 100%;
   background: #18191D;
   color: #fff;
@@ -356,11 +357,11 @@ table tbody td {
 }
 
 #TraiteurToolsTable {
-  width: 1100px;
+  width: 1200px;
 }
 
 #TraiteurToolsTable tbody tr td {
-  width: calc(100% / 8);
+  width: calc(100% / 9);
 }
 
 #TraiteurToolsTable tbody tr td input {
@@ -453,15 +454,18 @@ table tbody tr {
 }
 
 #UpdateTraiteur_Tool>form {
-  margin-top: 30px;
+  margin-top: 20px;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
 }
 
-#UpdateTraiteur_Tool>form>div:not(:last-of-type) {
+#UpdateTraiteur_Tool>form>div:not(:first-of-type, :last-of-type) {
   width: calc(95% / 2);
-  margin: 10px 0;
+}
+
+#UpdateTraiteur_Tool>form>div:not(:last-of-type) {
+  margin-bottom: 10px;
 }
 
 #UpdateTraiteur_Tool>form>div * {
@@ -478,13 +482,19 @@ table tbody tr {
   width: 100%;
 }
 
-#Client_Page {
+#Client_Page, #ReturnedTools_Page {
   padding: 40px;
 }
 
-#Client_Page > div:first-of-type > h1 {
+#Client_Page > div:first-of-type > h1, 
+#ReturnedTools_Page > div:first-of-type h1 {
   text-align: center;
   margin-bottom: 30px;
+}
+
+#ReturnedTools_Page > div:first-of-type > div {
+  width: 60%;
+  margin: 0 auto;
 }
 
 #Client_Page > div:first-of-type > form {

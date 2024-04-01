@@ -25,7 +25,7 @@ class ClientController extends Controller
         try {
             $client = new Client();
 
-            $client -> ClientCIN = $request -> input("CIN");
+            $client -> ClientCIN = $request -> input("ClientCIN");
             $client -> FirstName = $request -> input("FirstName");
             $client -> LastName = $request -> input("LastName");
             $client -> Thel = $request -> input("Thel");

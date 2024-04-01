@@ -13,14 +13,19 @@ return new class extends Migration
     {
         Schema::create('traiteur_tools', function (Blueprint $table) {
             $table->id();
+            $table -> unsignedBigInteger("ClientId");
             $table->unsignedBigInteger('tool_id');
             $table->unsignedBigInteger('traiteur_id');
             $table->double("price");
             $table->integer("qty");
+            $table -> integer("returnedQty") ->default(0);
             $table->dateTime("dateStart");
             $table->dateTime("dateEnd");
+
             $table->foreign('tool_id')->references('id')->on('tools')->onDelete('cascade');
+            $table->foreign('ClientId')->references('id')->on('clients')->onDelete('cascade');
             $table->foreign('traiteur_id')->references('id')->on('traiteurs')->onDelete('cascade');
+
             $table->timestamps();
         });
     }
