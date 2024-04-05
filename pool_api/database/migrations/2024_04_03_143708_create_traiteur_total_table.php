@@ -11,16 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('salles', function (Blueprint $table) {
+        Schema::create('traiteur_totals', function (Blueprint $table) {
             $table->id();
-            $table -> unsignedBigInteger("ClientId");
-            $table->boolean("is_salle");
-            $table->dateTime("date_start");
-            $table->dateTime("date_end");
-            $table->double("price");
+            $table -> unsignedBigInteger("traiteur_id");
+            $table -> double("Advance") -> nullable();
+            $table -> double("Total");
+            $table -> float("Payed");
+            $table->foreign('traiteur_id')->references('id')->on('traiteurs')->onDelete('cascade');
             $table->timestamps();
-
-            $table->foreign('ClientId')->references('id')->on('clients')->onDelete('cascade');
         });
     }
 
@@ -29,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('salles');
+        Schema::dropIfExists('traiteur_total');
     }
 };

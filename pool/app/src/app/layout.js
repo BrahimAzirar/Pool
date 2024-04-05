@@ -19,7 +19,7 @@ export default function RootLayout({ children }) {
                     <Link href={"/"}>Tableau de bord</Link>
                 </li>
                 <li>
-                    <img src="imgs/grand_salle.png" alt=""/>
+                    <img src="imgs/users-solid.svg" alt=""/>
                     <Link href="/clients">Clients</Link>
                 </li>
                 <li>
@@ -47,7 +47,7 @@ export default function RootLayout({ children }) {
                     <Link href={"/traiteur"}>traiteur</Link>
                 </li>
                 <li>
-                    <img src="imgs/traiteur.png" alt=""/>
+                    <img src="imgs/screwdriver-wrench-solid.svg" alt=""/>
                     <Link href={"/ReturnedTools"}>outils retournes</Link>
                 </li>
             </ul>

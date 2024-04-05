@@ -5,17 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Salle extends Model
+class traiteur_total extends Model
 {
     use HasFactory;
 
-    protected $table = "salles";
-
     protected $fillable = [
-        "ClientId",
-        "is_salle",
-        "date_start",
-        "date_end",
-        "price"
+        'traiteur_id',
+        'Advance',
+        'Total',
+        'Payed',
     ];
 }

@@ -5,67 +5,112 @@ import axios from "@/lib/axios";
 import React from "react";
 
 export default function piscine() {
-  const conponentPDF = useRef();
+  const [Offers, setOffers] = useState([]);
+  const [clientCounts, setclientCounts] = useState(0);
   const [piscine, setPiscine] = useState([]);
-  const [person, setPerson] = useState("");
-  const [offer, setOffer] = useState("");
   const [piscineId, setPiscineId] = useState(0);
+  const [UpdatePicine, setUpdatePicine] = useState(false);
+
+  const conponentPDF = useRef();
+  const OffersContainer = useRef();
 
   useEffect(() => {
+    const fetchPiscine = async () => {
+      try {
+        const result = await (await axios.get("/api/pools")).data;
+        if (result.err) throw new Error(result.err);
+        setPiscine(result.response);
+      } catch (error) {
+        alert(error.message);
+      }
+    };
+
     fetchPiscine();
   }, []);
 
-  const personChange = (e) => {
-    setPerson(e.target.value);
-  };
-
-  const offerChange = (e) => {
-    setOffer(e.target.value);
-  };
-
-  const editPiscine = (id) => {
-    setPiscineId(id);
-    piscine.map((item) => {
-      if (item.id == id) {
-        setOffer(item.offer);
-        setPerson(item.add_person);
-      }
-    });
-  };
-
-  const submitForm = (e) => {
+  const editPiscine = async (e) => {
     e.preventDefault();
-    var formData = new FormData();
-    formData.append("offer", offer);
-    formData.append("person", person);
-    let url = `/api/pools`;
-    console.log(piscineId);
-    if (piscineId != "") {
-      url = `/api/pools/${piscineId}`;
-      formData.append("_method", "PUT");
+
+    try {
+      if (Offers.length === 1) {
+        const reqData = new FormData();
+        reqData.append('person', clientCounts);
+        reqData.append('offer', Offers[0]);
+        reqData.append("_method", "PUT");
+
+        const result = await (await axios.post(`/api/pools/${piscineId}`, reqData)).data;
+        if (result.err) throw new Error(result.err);
+        if (result.response) {
+          setOffers(prev => prev.map(ele => {
+            if (ele.id == parseInt(piscineId)) {
+              ele.offer = Offers[0];
+              ele.add_person = clientCounts;
+            }
+            else console.log(ele.id, parseInt(piscineId), ele.id == parseInt(piscineId));
+
+            return ele;
+          }));
+          setclientCounts(0);
+        };
+      } else throw new Error("Choose only one offer");
+    } catch (error) {
+      alert(error.message);
     }
-    axios.post(url, formData).then((response) => {
-      setOffer("");
-      setPerson("");
-      fetchPiscine();
-      setPiscineId("");
-    });
   };
 
-  const deletePiscine = (id) => {
-    let params = { _method: "delete" };
-    axios.post(`/api/pools/${id}`, params).then((response) => {
-      setOffer("");
-      setPerson("");
-      fetchPiscine();
-      setPiscineId("");
-    });
+  const AddPoolOffer = async (e) => {
+    e.preventDefault();
+
+    try {
+      const data = Offers.map((ele) => {
+        return { offer: ele, add_person: clientCounts };
+      });
+      const result = await (await axios.post("/api/pools", data)).data;
+      if (result.err) throw new Error(result.err);
+      if (result.response) {
+        let id = result.response, dataReturned = [];
+        setclientCounts(0);
+        Array.from(OffersContainer.current.children).forEach((ele) => {
+          ele.classList.remove("ActiveOffer");
+        });
+        data.reverse().forEach(({ offer, add_person }) => {
+          dataReturned.push({ id, offer, add_person });
+          id -= 1;
+        });
+        dataReturned = dataReturned.reverse();
+        setPiscine((prev) => [...prev, ...dataReturned]);
+      }
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
-  const fetchPiscine = () => {
-    axios.get("/api/pools").then((response) => {
-      setPiscine(response.data);
-    });
+  const deletePiscine = async (id) => {
+    try {
+      const params = { _method: "delete" };
+      const result = await (await axios.post(`/api/pools/${id}`, params)).data;
+      if (result.err) throw new Error(result.err);
+      if (result.response) {
+        setPiscine((prev) =>
+          prev.filter((ele) => {
+            return ele.id !== id;
+          })
+        );
+      }
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
+  const ActiveOffer = async (e) => {
+    e.target.classList.toggle("ActiveOffer");
+    if (e.target.className == "ActiveOffer") {
+      setOffers((prev) => [...prev, parseInt(e.target.textContent)]);
+    } else {
+      setOffers((prev) =>
+        prev.filter((ele) => ele !== parseInt(e.target.textContent))
+      );
+    }
   };
 
   const generatePDF = useReactToPrint({
@@ -74,40 +119,39 @@ export default function piscine() {
   });
 
   return (
-    <div class="part-1">
+    <div id="PoolPage" className="part-1">
       <nav>
-        <div class="left-nav">
+        <div className="left-nav">
           <h1>piscine</h1>
           <div>Votre piscine Personnel</div>
         </div>
       </nav>
-      <div class="content">
-        <form onSubmit={submitForm} method="Post">
-          <div class="top-content">
-            <div class="left-top-content">
-              <p>Choisissez L'offer:</p>
-              <input
-                type="number"
-                className="salle"
-                placeholder="ajoute offer...."
-                name="offer"
-                value={offer}
-                onChange={offerChange}
-              />
-            </div>
-            <div class="right-top-content">
-              <p>Autres piscine:</p>
-              <input
-                type="number"
-                className="salle"
-                placeholder="ajoute autre...."
-                name="person"
-                value={person}
-                onChange={personChange}
-              />
-            </div>
+      <div className="content">
+        <form>
+          <div id="Offers" ref={OffersContainer}>
+            {[2, 3, 5, 10, 15, 20, 25, 30].map((ele) => {
+              return (
+                <div key={ele} onClick={ActiveOffer}>
+                  {ele}
+                </div>
+              );
+            })}
           </div>
-          <input type="submit" />
+          <div id="CountsClient">
+            <input
+              type="number"
+              name="count"
+              className="salle"
+              value={clientCounts}
+              onChange={(e) => setclientCounts(e.target.value)}
+              placeholder="Enter the clients count"
+            />
+            {UpdatePicine ? (
+              <button onClick={editPiscine}>Update piscine offers</button>
+            ) : (
+              <button onClick={AddPoolOffer}>Send piscine offers</button>
+            )}
+          </div>
         </form>
         <div className="bottom-content">
           <input onClick={generatePDF} type="button" value="PDF" />
@@ -115,22 +159,34 @@ export default function piscine() {
             <table class="table" ref={conponentPDF}>
               <thead>
                 <tr>
-                  <th scope="col">#</th>
+                  <th scope="col">id</th>
                   <th scope="col">offer</th>
-                  <th scope="col">autres piscine</th>
-                  <th scope="col">total</th>
+                  <th scope="col">the clients count</th>
                   <th scope="col">action</th>
                 </tr>
               </thead>
               <tbody>
                 {piscine.map((item) => (
                   <tr key={item.id}>
-                    <th>{item.references_pool}</th>
+                    <td>{item.id}</td>
                     <td>{item.offer}</td>
                     <td>{item.add_person}</td>
-                    <td>{item.total}</td>
                     <td>
-                      <button onClick={() => editPiscine(item.id)}>
+                      <button
+                        onClick={() => {
+                          setOffers([parseInt(item.offer)]);
+                          setclientCounts(item.add_person);
+                          setUpdatePicine(true);
+                          setPiscineId(item.id);
+                          Array.from(OffersContainer.current.children).forEach(
+                            (ele) => {
+                              if (ele.textContent == item.offer)
+                                ele.classList.add("ActiveOffer");
+                              else ele.classList.remove("ActiveOffer");
+                            }
+                          );
+                        }}
+                      >
                         update
                       </button>
                       <button onClick={() => deletePiscine(item.id)}>

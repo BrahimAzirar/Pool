@@ -3,58 +3,56 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pool;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PoolController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): JsonResponse
     {
-        return response()->json(Pool::latest()->get());
-    }
-// `references_pool`, `offer`, `add_person`, `total`
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        Pool::create([
-            'references_pool' => 'pool-' . date("Ymd") . '-'. date("his"),
-            'offer' => $request->offer,
-            'add_person' => $request->person,
-            'total' => $request->person * $request->offer,
-        ]);
-        return response()->json(true);
+        try {
+            $data = Pool::all();
+            return response() -> json(["response" => $data]);
+        } catch (\Exception $e) {
+            Log::error("The error from PoolController in index(): ". $e -> getMessage());
+            return response() -> json(["err" => "An error in the server. try later"]);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Pool $pool)
+    public function store(Request $request): JsonResponse
     {
-        //
+        try {
+            Pool::insert($request -> all());
+            $maxId = Pool::pluck('id')->max();
+            return response() -> json(["response" => $maxId]);
+        } catch (\Exception $e) {
+            Log::error("The error from PoolController in store(): ". $e -> getMessage());
+            return response() -> json(["err" => "An error in the server. try later"]);
+        }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Pool $pool)
     {
-        $pool->offer = $request->offer;
-        $pool->add_person = $request->person;
-        $pool->total = $request->person * $request->offer;
-        $pool->save();
-        return response()->json(true);
+        try {
+            $pool->offer = $request->offer;
+            $pool->add_person = $request->person;
+            $pool->save();
+            return response()->json(["response" => true]);
+        } catch (\Exception $e) {
+            Log::error("The error from PoolController in update(): ". $e -> getMessage());
+            return response() -> json(["err" => "An error in the server. try later"]);
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Pool $pool)
+    public function destroy(Pool $pool): JsonResponse
     {
-        $pool->delete();
-        return response()->json(true);
+        try {
+            $pool -> delete();
+            return response() -> json(["response" => true]);
+        } catch (\Exception $e) {
+            Log::error("The error from PoolController in destroy(): ". $e -> getMessage());
+            return response() -> json(["err" => "An error in the server. try later"]);
+        }
     }
 }

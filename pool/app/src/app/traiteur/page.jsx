@@ -8,6 +8,8 @@ import styles from "./page.module.css";
 import UpdateTraiteur_Tool from "./UpdatePage";
 
 export default function traiteur() {
+  const [Totatl, setTotal] = useState(0);
+  const [FakeTotal, setFakeTotal] = useState(0);
   const [data_we_want_to_updated, setdata_we_want_to_updated] = useState({});
   const [UpdateTraiteurTool, setUpdateTraiteurTool] = useState(false);
   const [TraiteurTools, setTraiteurTools] = useState([]);
@@ -27,6 +29,7 @@ export default function traiteur() {
   const DateStart = useRef();
   const DateEnd = useRef();
   const TargetClient = useRef();
+  const Advance = useRef();
 
   useEffect(() => {
     const fetchTool = async () => {
@@ -76,6 +79,10 @@ export default function traiteur() {
     GetAllClients();
     getAllTraiteursTools();
   }, []);
+
+  useEffect(() => {
+    setFakeTotal(Totatl);
+  }, [Totatl]);
 
   const editTools = async (e) => {
     e.preventDefault();
@@ -160,16 +167,17 @@ export default function traiteur() {
 
   const checkSelected = (e) => {
     const tool_id = e.target.value;
-    if (e.target.checked) {
-      const price =
+    const price =
         e.target.parentElement.nextElementSibling.nextElementSibling.children[0]
           .value;
       const quantity =
         e.target.parentElement.nextElementSibling.nextElementSibling
           .nextElementSibling.children[0].value;
-
+    if (e.target.checked) {
+      setTotal(prev => prev + (price * quantity));
       setTraiteurs([...Traiteurs, { tool_id, price, quantity }]);
     } else {
+      setTotal(prev => prev - (price * quantity));
       setTraiteurs((prev) => {
         return prev.filter((ele) => ele.tool_id !== tool_id);
       });
@@ -184,30 +192,27 @@ export default function traiteur() {
       const dateStart = DateStart.current.value;
       const dateEnd = DateEnd.current.value;
       const targetClient = TargetClient.current.value;
-      const data = { targetTraitreur, dateStart, dateEnd, Traiteurs, targetClient };
+      const advance = Advance.current.value;
+      const data = {
+        targetTraitreur,
+        dateStart,
+        dateEnd,
+        Traiteurs,
+        targetClient,
+        Totatl: FakeTotal,
+        advance
+      };
 
       const result = await (
         await axios.post("/api/AddTraiteurTool", data)
       ).data;
       if (result.err) throw new Error(result.err);
       if (result.response) {
-        const LastId = Math.max(...TraiteurTools.map((item) => item.id), 0);
-
-        Traiteurs.forEach(({ tool_id, price, quantity }, idx) => {
-          const data = {
-            id: LastId + idx + 1,
-            tool_id,
-            traiteur_id: targetTraitreur,
-            ClientId: targetClient,
-            price,
-            qty: quantity,
-            dateStart,
-            dateEnd,
-          };
-
-          setTraiteurTools((prevTraiteurTools) => [...prevTraiteurTools, data]);
-        });
-
+        setTraiteurTools((prevTraiteurTools) => [...prevTraiteurTools, {
+          traiteur_id: targetTraitreur, dateStart, dateEnd,
+          ClientId: targetClient, Total: FakeTotal,
+          Advance: advance, Payed: false
+        }]);
         TargetTraiteur.current.value = "";
         TargetTraiteur.current.value = "";
         DateEnd.current.value = "";
@@ -264,7 +269,7 @@ export default function traiteur() {
       if (result.response) {
         setTraiteurTools((prev) =>
           prev.filter((ele) => {
-            return ele.id !== id;
+            return ele.traiteur_id !== id;
           })
         );
       }
@@ -393,7 +398,37 @@ export default function traiteur() {
                 <Image width={10} height={10} src="/imgs/filter.png" alt="" />
               </div>
             </div>
-            <form>
+            <form id="TraiteurToolsX98234">
+              <div id="TraiteurActions">
+                <div>
+                  <div>
+                    <select ref={TargetTraiteur}>
+                      <option value={null}>Choose the party name</option>
+                      {RegesteredTraiteurs.map((ele) => {
+                        return <option value={ele.id}>{ele.Name}</option>;
+                      })}
+                    </select>
+                  </div>
+                  <div>
+                    <select ref={TargetClient}>
+                      <option value={null}>Choose the client</option>
+                      {Clients.map((ele) => {
+                        return (
+                          <option value={ele.id}>
+                            {ele.FirstName} {ele.LastName}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  <div>
+                    <input type="datetime-local" ref={DateStart} />
+                  </div>
+                  <div>
+                    <input type="datetime-local" ref={DateEnd} />
+                  </div>
+                </div>
+              </div>
               <div className="table-pool">
                 <table className="table">
                   <thead>
@@ -451,37 +486,32 @@ export default function traiteur() {
                   </tbody>
                 </table>
               </div>
-              <div id="TraiteurActions">
+              <div>
                 <div>
-                  <div>
-                    <select ref={TargetTraiteur}>
-                      <option value={null}>Choose the party name</option>
-                      {RegesteredTraiteurs.map((ele) => {
-                        return <option value={ele.id}>{ele.Name}</option>;
-                      })}
-                    </select>
-                  </div>
-                  <div>
-                    <select ref={TargetClient}>
-                      <option value={null}>Choose the client</option>
-                      {Clients.map(ele => {
-                        return (
-                          <option value={ele.id}>
-                            {ele.FirstName} {ele.LastName}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  </div>
-                  <div>
-                    <input type="datetime-local" ref={DateStart} />
-                  </div>
-                  <div>
-                    <input type="datetime-local" ref={DateEnd} />
-                  </div>
+                  <input
+                    type="number"
+                    className="salle"
+                    ref={Advance}
+                    placeholder="Avance"
+                    style={{ width: "50%" }}
+                    onChange={e => setFakeTotal(() => {
+                      if (e.target.value == '')
+                        return Totatl;
+                      if (parseInt(e.target.value) < 0 || Totatl == 0)
+                        return 0;
+                      return Totatl - parseInt(e.target.value);
+                    })}
+                  />
+                  <p style={{ margin: "0", fontSize: "1.3rem" }}>
+                    <span>{ FakeTotal }</span> DH
+                  </p>
                 </div>
                 <div className="submit-traiteur">
-                  <input type="submit" onClick={SendTraiteursTool} />
+                  <input
+                    type="submit"
+                    style={{ margin: "0", width: "100%" }}
+                    onClick={SendTraiteursTool}
+                  />
                 </div>
               </div>
             </form>
@@ -499,12 +529,11 @@ export default function traiteur() {
                 <table className="table" id="TraiteurToolsTable">
                   <thead>
                     <tr>
-                      <th>id</th>
-                      <th>client name</th>
-                      <th>outil</th>
                       <th>traiteur</th>
-                      <th>price</th>
-                      <th>quantity</th>
+                      <th>client name</th>
+                      <th>total</th>
+                      <th>avance</th>
+                      <th>payé</th>
                       <th>date start</th>
                       <th>date end</th>
                       <th>actions</th>
@@ -512,15 +541,12 @@ export default function traiteur() {
                   </thead>
                   <tbody>
                     {TraiteurTools.map((item) => {
-                      const client = Clients.find((ele) => ele.id == item.ClientId);
+                      const client = Clients.find(
+                        (ele) => ele.id == item.ClientId
+                      );
                       const { FirstName, LastName } = client || {};
                       return (
-                        <tr key={item.id}>
-                          <td>{item.id}</td>
-                          <td>{FirstName} {LastName}</td>
-                          <td>
-                            {tools.find((ele) => ele.id == item.tool_id).name}
-                          </td>
+                        <tr key={item.traiteur_id}>
                           <td>
                             {
                               RegesteredTraiteurs.find(
@@ -528,8 +554,12 @@ export default function traiteur() {
                               ).Name
                             }
                           </td>
-                          <td>{item.price}</td>
-                          <td>{item.qty}</td>
+                          <td>
+                            {FirstName} {LastName}
+                          </td>
+                          <td>{ item.Total }</td>
+                          <td>{ item.Advance ? item.Advance : 0 }</td>
+                          <td> impayé </td>
                           <td style={{ fontSize: ".8rem" }}>
                             {item.dateStart}
                           </td>
@@ -545,7 +575,7 @@ export default function traiteur() {
                               update
                             </button>
                             <button
-                              onClick={(e) => DeleteTraiteurTool(e, item.id)}
+                              onClick={(e) => DeleteTraiteurTool(e, item.traiteur_id)}
                             >
                               delete
                             </button>
@@ -562,4 +592,4 @@ export default function traiteur() {
       </div>
     </>
   );
-};
+}

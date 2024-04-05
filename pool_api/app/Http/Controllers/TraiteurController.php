@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Ramsey\Uuid\Uuid;
+use App\Models\Tool;
 use App\Models\Traiteur;
 use App\Models\traiteur_tools;
+use App\Models\traiteur_total;
 use Illuminate\Http\Request;
 use \Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -79,6 +80,8 @@ class TraiteurController extends Controller
             $dateStart = $request->input('dateStart');
             $targetTraitreur = $request->input('targetTraitreur');
             $targetClient = $request->input('targetClient');
+            $total = $request -> input("Totatl");
+            $advance = ($request -> input("advance") ? $request -> input("advance") : 0);
 
             foreach ($Traiteurs as $item) {
                 $data[] = [
@@ -94,6 +97,12 @@ class TraiteurController extends Controller
             };
 
             traiteur_tools::insert($data);
+            traiteur_total::create([
+                "traiteur_id" => $targetTraitreur,
+                "Advance" => $advance,
+                "Total" => $total - $advance,
+                "Payed" => false
+            ]);
 
             return response()->json(["response" => true]);
         } catch (\Exception $e) {
@@ -105,7 +114,16 @@ class TraiteurController extends Controller
     function getAllTraiteursTools(): JsonResponse
     {
         try {
-            return response()->json(["response" => traiteur_tools::whereColumn('returnedQty', '<>', 'qty')->get()]);
+            $result = Traiteur::select('traiteur_tools.traiteur_id', 'traiteur_tools.dateStart', 'traiteur_tools.dateEnd', 'traiteur_tools.ClientId', 'traiteur_totals.Total', 'traiteur_totals.Advance', 'traiteur_totals.Payed')
+                ->join('traiteur_tools', 'traiteurs.id', '=', 'traiteur_tools.traiteur_id')
+                ->join('traiteur_totals', 'traiteurs.id', '=', 'traiteur_totals.traiteur_id')
+                ->join('clients', 'traiteur_tools.ClientId', '=', 'clients.id')
+                ->where('traiteur_tools.qty', '<>', 'traiteur_tools.returnedQty')
+                ->where('traiteur_totals.Payed', '=', false)
+                ->distinct()
+                ->get();
+
+            return response() -> json(["response" => $result]);
         } catch (\Exception $e) {
             Log::error("The error in TraiteurController => getAllTraiteursTools: " . $e->getMessage());
             return response()->json(["err" => "An error occurred on the server. Please try again later."], 500);
@@ -129,14 +147,19 @@ class TraiteurController extends Controller
 
     function deleteTraiteursTool($id): JsonResponse
     {
+        DB::beginTransaction();
+
         try {
             if (is_numeric($id)) {
-                traiteur_tools::destroy($id);
+                traiteur_tools::where('traiteur_id', $id)->delete();
+                traiteur_total::where('traiteur_id', $id)->delete();
+                DB::commit();
                 return response()->json(["response" => true]);
             };
 
             return response()->json(["response" => false]);
         } catch (\Exception $e) {
+            DB::rollback();
             Log::error("The error in TraiteurController => deleteTraiteursTool: " . $e->getMessage());
             return response()->json(["err" => "An error occurred on the server. Please try again later."], 500);
         }
@@ -171,6 +194,19 @@ class TraiteurController extends Controller
             return response()->json(["response" => true]);
         } catch (\Exception $e) {
             Log::error("The error in TraiteurController => UpdateTraiteurTool: " . $e->getMessage());
+            return response()->json(["err" => "An error occurred on the server. Please try again later."], 500);
+        }
+    }
+
+    function getToolsData($id) : JsonResponse {
+        try {
+            $tools = traiteur_tools::select("traiteur_id", "tool_id", "price", "qty", "returnedQty")
+                -> where("traiteur_id", "=", $id)
+                -> get();
+
+            return response() -> json(["response" => $tools]);
+        } catch (\Exception $e) {
+            Log::error("The error in TraiteurController => getToolsData: " . $e->getMessage());
             return response()->json(["err" => "An error occurred on the server. Please try again later."], 500);
         }
     }

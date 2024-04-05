@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('pools', function (Blueprint $table) {
             $table->id();
-            $table->string("references_pool");
             $table->integer("offer");
             $table->integer("add_person")->default(1);
             $table->timestamps();

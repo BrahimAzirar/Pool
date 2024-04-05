@@ -55,14 +55,16 @@ a {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 20px;
 }
 
 .part-1 nav {
   width: 80%;
-  height: 150px;
+  /* height: 150px; */
   display: flex;
   align-items: center;
-  margin-top: 40px;
+  margin-bottom: 30px;
+  /* margin-top: 40px; */
 }
 
 .part-1 nav .left-nav div {
@@ -215,6 +217,23 @@ input.salle {
   -o-transform: translateX(-50%);
 }
 
+#TraiteurToolsX98234 > div:last-child {
+  width: 88%;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+#TraiteurToolsX98234 > div:last-child > div {
+  width: 100%;
+}
+
+#TraiteurToolsX98234 > div:last-child > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 15px 0;
+}
+
 #TraiteurActions {
   width: 88%;
   display: flex;
@@ -243,7 +262,8 @@ input.salle {
 #TraiteurActions>div:first-of-type>div input,
 #UpdateTraiteur_Tool>form>div select,
 #UpdateTraiteur_Tool>form>div input,
-#ReturnedTools_Page > div:first-of-type select {
+#ReturnedTools_Page > div:first-of-type select,
+.Salle_Client_Select {
   width: 100%;
   background: #18191D;
   color: #fff;
@@ -256,7 +276,8 @@ input.salle {
 form input[type="submit"],
 input[type="button"],
 #UpdateTraiteur_Tool>form>div button,
-#Client_Page > div:first-of-type > form > div:last-of-type button {
+#Client_Page > div:first-of-type > form > div:last-of-type button,
+#CountsClient button {
   cursor: pointer;
   padding: 5px 10px;
   background: #56B9E1;
@@ -405,7 +426,7 @@ table tbody tr {
 }
 
 .left-top-content div input {
-  width: 130px;
+  width: 100%;
 }
 
 .date-total {
@@ -529,4 +550,53 @@ table tbody tr {
 
 #Client_Page > div:first-of-type > form > div:last-of-type button {
   font-size: 1.1rem;
+}
+
+#PoolPage div#Offers {
+  width: 25%;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+#PoolPage div#Offers div {
+  font-size: 1.5rem;
+  text-align: center;
+  padding: 12px 0;
+  cursor: pointer;
+  border: 2px solid;
+  transition: .2s ease-in;
+}
+
+#PoolPage div#Offers div:hover {
+  background-color: white;
+  border-color: white;
+  color: black;
+}
+
+.ActiveOffer {
+  transform: scale(.9);
+  background-color: white;
+  color: black;
+}
+
+#CountsClient {
+  width: 65%;
+  margin: 30px auto;
+  display: flex;
+  justify-content: space-between;
+}
+
+#CountsClient input {
+  width: 65%;
+}
+
+#CountsClient button {
+  width: 30%;
+  margin: 0;
+}
+
+.left-top-content > div {
+  width: calc(90% / 2);
 }

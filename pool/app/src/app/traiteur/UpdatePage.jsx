@@ -1,7 +1,7 @@
 "use client";
 
 import axios from "axios";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function UpdateTraiteur_Tool({
   data,
@@ -11,12 +11,28 @@ export default function UpdateTraiteur_Tool({
   callback1,
   callback2,
 }) {
-  const [Price, setPrice] = useState(data.price);
-  const [Quantite, setQuantite] = useState(data.qty);
+
   const [DateStart, setDateStart] = useState(data.dateStart);
   const [DateEnd, setDateEnd] = useState(data.dateEnd);
-
   const TargetForm = useRef();
+
+  useEffect(() => {
+    const getToolsData = async () => {
+      try {
+        const result = await (
+          await axios.get(
+            `${process.env.BACKEND_URL}/api/getToolsData/${data.traiteur_id}`
+          )
+        ).data;
+        if (result.err) throw new Error(result.err);
+        
+      } catch (error) {
+        alert(error.message);
+      }
+    };
+
+    getToolsData();
+  }, []);
 
   const UpdateData = async (e) => {
     e.preventDefault();
@@ -54,6 +70,58 @@ export default function UpdateTraiteur_Tool({
         <img src="imgs/cancel.svg" alt="" onClick={() => callback1(false)} />
       </div>
       <form ref={TargetForm}>
+        <div>
+          <select name="ClientId">
+            {clients.map((ele) => {
+              if (ele.id == data.ClientId)
+                return (
+                  <option value={ele.id} key={ele.id} selected>
+                    {ele.FirstName} {ele.LastName}
+                  </option>
+                );
+              return (
+                <option value={ele.id} key={ele.id}>
+                  {ele.FirstName} {ele.LastName}
+                </option>
+              );
+            })}
+          </select>
+        </div>
+        <div>
+          <select name="traiteur_id">
+            {traiteurs.map((ele) => {
+              if (ele.id == data.traiteur_id)
+                return (
+                  <option value={ele.id} key={ele.id} selected>
+                    {ele.Name}
+                  </option>
+                );
+              return (
+                <option value={ele.id} key={ele.id}>
+                  {ele.Name}
+                </option>
+              );
+            })}
+          </select>
+        </div>
+        <div>
+          <input
+            type="datetime-local"
+            name="dateStart"
+            value={DateStart}
+            onChange={(e) => setDateStart(e.target.value)}
+          />
+        </div>
+        <div>
+          <input
+            type="datetime-local"
+            name="dateEnd"
+            value={DateEnd}
+            onChange={(e) => setDateEnd(e.target.value)}
+          />
+        </div>
+      </form>
+      {/* <form ref={TargetForm}>
         <div>
           <select name="ClientId">
             {clients.map((ele) => {
@@ -140,7 +208,7 @@ export default function UpdateTraiteur_Tool({
         <div>
           <button onClick={UpdateData}>Update</button>
         </div>
-      </form>
+      </form> */}
     </div>
   );
 }
