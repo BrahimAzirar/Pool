@@ -3,53 +3,61 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cafe;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CafeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+
+    public function index(): JsonResponse
     {
-        return response()->json(Cafe::latest()->get());
+        try {
+            return response()->json(["response" => Cafe::latest()->get()]);
+        } catch (\Exception $e) {
+            Log::error("The error from CafeController in index(): " . $e -> getMessage());
+            return response() -> json(["err" => "An error in the server. try later"]);
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
-        Cafe::create([
-            'price' => $request->price
-        ]);
-        return response()->json(true);
+        try {
+            $result = Cafe::create([
+                "EmployeName" => $request ->  EmployeName,
+                'price' => $request->price,
+                "Date" => $request -> Date
+            ]);
+
+            return response()->json(["response" => $result -> id]);
+        } catch (\Exception $e) {
+            Log::error("The error from CafeController in store(): " . $e -> getMessage());
+            return response() -> json(["err" => "An error in the server. try later"]);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Cafe $cafe)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Cafe $cafe)
     {
-        $cafe->price = $request->price;
-        $cafe->save();
-        return response()->json(true);
+        try {
+            $cafe->EmployeName = $request->EmployeName;
+            $cafe->price = $request->price;
+            $cafe->Date = $request->Date;
+            $cafe->save();
+            return response()->json(["response" => true]);
+        } catch (\Exception $e) {
+            Log::error("The error from CafeController in update(): " . $e -> getMessage());
+            return response() -> json(["err" => "An error in the server. try later"]);
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Cafe $cafe)
     {
-        $cafe->delete();
-        return response()->json(true);
+        try {
+            $cafe -> delete();
+            return response()->json(["response" => true]);
+        } catch (\Exception $e) {
+            Log::error("The error from CafeController in destroy(): " . $e -> getMessage());
+            return response() -> json(["err" => "An error in the server. try later"]);
+        }
     }
 }

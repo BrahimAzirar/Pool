@@ -6,56 +6,87 @@ import React from "react";
 
 export default function cafe() {
   const conponentPDF = useRef();
+  const TargetForm = useRef();
   const [cafeData, setCafe] = useState([]);
   const [price, setPrice] = useState(0);
-  const [cafeDataId, setCafeId] = useState("");
+  const [EmployeName, setEmployeName] = useState("");
+  const [Date, setDate] = useState("");
+  const [Update, setUpdate] = useState(false);
+  const [cafeDataId, setCafeId] = useState(0);
 
   useEffect(() => {
+    const fetchCafe = async () => {
+      try {
+        const result = await (await axios.get("/api/cafes")).data;
+        if (result.err) throw new Error(result.err);
+        setCafe(result.response);
+      } catch (error) {
+        alert(error.message);
+      }
+    };
+
     fetchCafe();
   }, []);
 
-  const priceChange = (e) => {
-    setPrice(e.target.value);
-  };
-
-  const editPrice = (id) => {
-    setCafeId(id);
-    cafeData.map((item) => {
-      if (item.id == id) {
-        setPrice(item.price);
-      }
-    });
-  };
-
-  const submitForm = (e) => {
+  const editPrice = async (e) => {
     e.preventDefault();
-    var formData = new FormData();
-    formData.append("price", price);
-    let url = `api/cafes`;
-    if (cafeDataId != "") {
-      url = `api/cafes/${cafeDataId}`;
-      formData.append("_method", "PUT");
+
+    try {
+      const data = new FormData(TargetForm.current);
+      data.append("_method", "PUT");
+      const result = await ( await axios.post(`/api/cafes/${cafeDataId}`, data) ).data;
+      if (result.err) throw new Error(result.err);
+      if (result.response) {
+        const newData = { id: cafeDataId, ...Object.fromEntries(data) };
+        setUpdate(false);
+        setCafeId(0);
+        setPrice("");
+        setDate("");
+        setEmployeName("");
+        setCafe(prev => prev.map(ele => {
+          if (ele.id == cafeDataId)
+            return newData;
+          return ele;
+        }))
+      }
+    } catch (error) {
+      alert(error.message);
+    };
+  };
+
+  const AddCafee = async (e) => {
+    e.preventDefault();
+
+    try {
+      const data = new FormData(TargetForm.current);
+      const result = await (await axios.post("/api/cafes", data)).data;
+      if (result.err) throw new Error(result.err);
+      setCafe((prev) => [
+        ...prev,
+        { id: result.response, ...Object.fromEntries(data) },
+      ]);
+      setPrice("");
+      setDate("");
+      setEmployeName("");
+    } catch (error) {
+      alert(error.message);
     }
-    axios.post(url, formData).then((response) => {
-      setPrice("");
-      fetchCafe();
-      setCafeId("");
-    });
   };
 
-  const deletePrice = (id) => {
-    let params = { _method: "delete" };
-    axios.post(`/api/cafes/${id}`, params).then((response) => {
-      setPrice("");
-      fetchCafe();
-      setCafeId("");
-    });
-  };
-
-  const fetchCafe = () => {
-    axios.get("/api/cafes").then((response) => {
-      setCafe(response.data);
-    });
+  const deletePrice = async (id) => {
+    try {
+      const result = await (await axios.delete(`/api/cafes/${id}`)).data;
+      if (result.err) throw new Error(result.err);
+      if (result.response) {
+        setCafe((prev) =>
+          prev.filter((ele) => {
+            return ele.id !== id;
+          })
+        );
+      }
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   const generatePDF = useReactToPrint({
@@ -72,9 +103,20 @@ export default function cafe() {
         </div>
       </nav>
       <div class="content">
-        <form method="Post" onSubmit={submitForm}>
+        <form id="FormCafeePage" ref={TargetForm}>
           <div class="top-content">
-            <div class="left-top-content">
+            <div>
+              <p>Ajouter le nom de l'employé:</p>
+              <input
+                type="text"
+                className="salle"
+                placeholder="Ajouter le nom de l'employé...."
+                name="EmployeName"
+                value={EmployeName}
+                onChange={(e) => setEmployeName(e.target.value)}
+              />
+            </div>
+            <div>
               <p>Ajoute le cout:</p>
               <input
                 type="number"
@@ -82,11 +124,25 @@ export default function cafe() {
                 placeholder="ajoute cout...."
                 name="price"
                 value={price}
-                onChange={priceChange}
+                onChange={(e) => setPrice(e.target.value)}
+              />
+            </div>
+            <div>
+              <p>Ajoute la date:</p>
+              <input
+                type="date"
+                className="salle"
+                name="Date"
+                value={Date}
+                onChange={(e) => setDate(e.target.value)}
               />
             </div>
           </div>
-          <input type="submit" />
+          {
+            Update ?
+              <input type="submit" onClick={editPrice} value='Update'/> :
+              <input type="submit" onClick={AddCafee} />
+          }
         </form>
         <div className="bottom-content">
           <input onClick={generatePDF} type="button" value="PDF" />
@@ -95,23 +151,37 @@ export default function cafe() {
               <thead>
                 <tr>
                   <th scope="col">#</th>
+                  <th scope="col">nom de l'employé</th>
                   <th scope="col">cout</th>
+                  <th scope="col">date</th>
                   <th scope="col">action</th>
                 </tr>
               </thead>
               <tbody>
-                {cafeData.map((item, i) => (
-                  <tr key={item.id}>
-                    <th>{i + 1}</th>
-                    <td>{item.price}</td>
-                    <td>
-                      <button onClick={() => editPrice(item.id)}>update</button>
-                      <button onClick={() => deletePrice(item.id)}>
-                        delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {cafeData.length
+                  ? cafeData.map((item) => (
+                      <tr key={item.id}>
+                        <th>{item.id}</th>
+                        <td>{item.EmployeName}</td>
+                        <td>{item.price}</td>
+                        <td>{item.Date}</td>
+                        <td>
+                          <button onClick={() => {
+                            setUpdate(true);
+                            setCafeId(item.id);
+                            setEmployeName(item.EmployeName);
+                            setPrice(item.price);
+                            setDate(item.Date);
+                          }}>
+                            update
+                          </button>
+                          <button onClick={() => deletePrice(item.id)}>
+                            delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  : null}
               </tbody>
             </table>
           </div>

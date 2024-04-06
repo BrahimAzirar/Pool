@@ -11,5 +11,5 @@ class Cafe extends Model
 
     protected $table = "cafes";
 
-    protected $fillable = ["price"];
+    protected $fillable = ["EmployeName", "price", "Date"];
 }

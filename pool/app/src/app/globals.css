@@ -601,19 +601,23 @@ table tbody tr {
   width: calc(90% / 2);
 }
 
-#expensesForm > div:first-child {
+#expensesForm > div:first-child,
+#FormCafeePage > div:first-child {
   flex-direction: row;
   justify-content: space-between;
 }
 
-#expensesForm > div:first-child > div {
+#expensesForm > div:first-child > div,
+#FormCafeePage > div:first-child > div {
   width: calc(90% / 3);
 }
 
-#expensesForm > div:first-child > div p {
+#expensesForm > div:first-child > div p,
+#FormCafeePage > div:first-child > div p {
   margin-bottom: 7px;
 }
 
-#expensesForm > div:first-child > div input {
+#expensesForm > div:first-child > div input,
+#FormCafeePage > div:first-child > div input {
   width: 100%;
 }
