@@ -600,3 +600,20 @@ table tbody tr {
 .left-top-content > div {
   width: calc(90% / 2);
 }
+
+#expensesForm > div:first-child {
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+#expensesForm > div:first-child > div {
+  width: calc(90% / 3);
+}
+
+#expensesForm > div:first-child > div p {
+  margin-bottom: 7px;
+}
+
+#expensesForm > div:first-child > div input {
+  width: 100%;
+}

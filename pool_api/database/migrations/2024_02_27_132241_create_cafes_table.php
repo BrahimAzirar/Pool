@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('cafes', function (Blueprint $table) {
             $table->id();
-            $table->double("price");
-            $table->timestamps();
+            $table -> string("EmployeName");
+            $table -> double("price");
+            $table -> date("Date");
+            $table -> timestamps();
         });
     }
 

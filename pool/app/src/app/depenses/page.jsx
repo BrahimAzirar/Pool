@@ -6,66 +6,94 @@ import React from "react";
 
 export default function depenses() {
   const conponentPDF = useRef();
+  const TargetForm = useRef();
   const [depenses, setDepenses] = useState([]);
   const [price, setPrice] = useState(0);
   const [name, setName] = useState("");
   const [depensesId, setDepensesId] = useState(0);
+  const [ExpenseDate, setExpenseDate] = useState("");
+  const [UpdateExpense, setUpdateExpense] = useState(false);
 
   useEffect(() => {
+    const fetchDepense = async () => {
+      try {
+        const result = await (await axios.get("/api/depenses")).data;
+        if (result.err) throw new Error(result.err);
+        setDepenses(result.response); 
+      } catch (error) {
+        alert(error.message);
+      }
+    };
+  
     fetchDepense();
   }, []);
 
-  const priceChange = (e) => {
-    setPrice(e.target.value);
-  };
-
-  const nameChange = (e) => {
-    setName(e.target.value);
-  };
-
-  const editDepenses = (id) => {
-    setDepensesId(id);
-    depenses.map((item) => {
-      if (item.id == id) {
-        setPrice(item.price);
-        setName(item.name);
-      }
-    });
-  };
-
-  const submitForm = (e) => {
+  const editDepenses = async (e) => {
     e.preventDefault();
-    var formData = new FormData();
-    formData.append("price", price);
-    formData.append("name", name);
-    let url = `/api/depenses`;
-    console.log(depensesId);
-    if (depensesId != "") {
-      url = `/api/depenses/${depensesId}`;
-      formData.append("_method", "PUT");
+
+    try {
+      const data = new FormData(TargetForm.current);
+      data.append("_method", "PUT");
+      const result = await (
+        await axios.post(`/api/depenses/${depensesId}`, data)
+      ).data;
+      if (result.err) throw new Error(result.err);
+      if (result.response) {
+        const newData = { id: depensesId, ...Object.fromEntries(data) };
+        setName("");
+        setPrice("");
+        setExpenseDate("");
+        setDepensesId(0);
+        setUpdateExpense(false);
+        setDepenses((prev) =>
+          prev.map((ele) => {
+            if (ele.id == depensesId) return newData;
+            return ele;
+          })
+        );
+      }
+    } catch (error) {
+      alert(error.message);
     }
-    axios.post(url, formData).then((response) => {
-      setPrice("");
-      setName("");
-      fetchDepense();
-      setDepensesId("");
-    });
   };
 
-  const deleteDepenses = (id) => {
-    let params = { _method: "delete" };
-    axios.post(`/api/depenses/${id}`, params).then((response) => {
-      setPrice("");
-      setName("");
-      fetchDepense();
-      setDepensesId("");
-    });
+  const AddExpense = async (e) => {
+    e.preventDefault();
+
+    try {
+      const data = new FormData(TargetForm.current);
+      const result = await (await axios.post(`/api/depenses`, data)).data;
+      if (result.err) throw new Error(result.err);
+      if (result.response) {
+        setName("");
+        setPrice("");
+        setExpenseDate("");
+        setDepenses((prev) => [
+          ...prev,
+          { id: result.response, ...Object.fromEntries(data) },
+        ]);
+      }
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
-  const fetchDepense = () => {
-    axios.get("/api/depenses").then((response) => {
-      setDepenses(response.data);
-    });
+  const deleteDepenses = async (e, id) => {
+    e.preventDefault();
+
+    try {
+      const result = await (await axios.delete(`/api/depenses/${id}`)).data;
+      if (result.err) throw new Error(result.err);
+      if (result.response) {
+        setDepenses((prev) =>
+          prev.filter((ele) => {
+            return ele.id !== id;
+          })
+        );
+      }
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   const generatePDF = useReactToPrint({
@@ -82,20 +110,9 @@ export default function depenses() {
         </div>
       </nav>
       <div className="content">
-        <form method="Post" onSubmit={submitForm}>
+        <form id="expensesForm" ref={TargetForm}>
           <div className="top-content">
-            <div className="left-top-content">
-              <p>Ajoute le cout:</p>
-              <input
-                type="number"
-                className="salle"
-                placeholder="ajoute cout...."
-                name="price"
-                value={price}
-                onChange={priceChange}
-              />
-            </div>
-            <div className="right-top-content">
+            <div>
               <p>Le type de depenses:</p>
               <input
                 type="text"
@@ -103,11 +120,45 @@ export default function depenses() {
                 placeholder="le type de depenses...."
                 name="name"
                 value={name}
-                onChange={nameChange}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+            <div>
+              <p>Ajoute le cout:</p>
+              <input
+                type="number"
+                className="salle"
+                placeholder="ajoute cout...."
+                name="price"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+              />
+            </div>
+            <div>
+              <p>Date des dépenses:</p>
+              <input
+                type="date"
+                className="salle"
+                placeholder="date des dépenses...."
+                name="expenseDate"
+                value={ExpenseDate}
+                onChange={(e) => setExpenseDate(e.target.value)}
               />
             </div>
           </div>
-          <input type="submit" />
+          {UpdateExpense ? (
+            <input
+              type="submit"
+              onClick={editDepenses}
+              value="modifier un dépense"
+            />
+          ) : (
+            <input
+              type="submit"
+              onClick={AddExpense}
+              value="Ajoutez un dépense"
+            />
+          )}
         </form>
         <div className="bottom-content">
           <input onClick={generatePDF} type="button" value="PDF" />
@@ -115,23 +166,34 @@ export default function depenses() {
             <table class="table" ref={conponentPDF}>
               <thead>
                 <tr>
-                  <th scope="col">#</th>
-                  <th scope="col">cout</th>
+                  <th scope="col">id</th>
                   <th scope="col">le type de cout</th>
+                  <th scope="col">cout</th>
+                  <th scope="col">date</th>
                   <th scope="col">action</th>
                 </tr>
               </thead>
               <tbody>
-                {depenses.map((item, i) => (
+                {depenses.map((item) => (
                   <tr key={item.id}>
-                    <th>{i + 1}</th>
-                    <td>{item.price}</td>
+                    <th>{item.id}</th>
                     <td>{item.name}</td>
+                    <td>{item.price}</td>
+                    <td>{item.expenseDate}</td>
                     <td>
-                      <button onClick={() => editDepenses(item.id)}>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setUpdateExpense(true);
+                          setDepensesId(item.id);
+                          setName(item.name);
+                          setPrice(item.price);
+                          setExpenseDate(item.expenseDate);
+                        }}
+                      >
                         update
                       </button>
-                      <button onClick={() => deleteDepenses(item.id)}>
+                      <button onClick={(e) => deleteDepenses(e, item.id)}>
                         delete
                       </button>
                     </td>
