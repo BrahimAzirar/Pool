@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->integer("offer");
             $table->integer("add_person")->default(1);
+            $table->date("poolDate");
             $table->timestamps();
         });
     }

@@ -75,6 +75,7 @@ class TraiteurController extends Controller
     {
         try {
             $data = [];
+            $exist = $request->input('IsExist');
             $Traiteurs = $request->input('Traiteurs');
             $dateEnd = $request->input('dateEnd');
             $dateStart = $request->input('dateStart');
@@ -97,12 +98,20 @@ class TraiteurController extends Controller
             };
 
             traiteur_tools::insert($data);
-            traiteur_total::create([
-                "traiteur_id" => $targetTraitreur,
-                "Advance" => $advance,
-                "Total" => $total - $advance,
-                "Payed" => false
-            ]);
+
+            if ($exist) {
+                $old = traiteur_total::where('traiteur_id', $targetTraitreur)->first();
+                $old -> Advance += $advance;
+                $old -> Total += $total;
+                $old -> save();
+            } else {
+                traiteur_total::create([
+                    "traiteur_id" => $targetTraitreur,
+                    "Advance" => $advance,
+                    "Total" => $total,
+                    "Payed" => false
+                ]);
+            };
 
             return response()->json(["response" => true]);
         } catch (\Exception $e) {
@@ -111,7 +120,7 @@ class TraiteurController extends Controller
         }
     }
 
-    function getAllTraiteursTools(): JsonResponse
+    function getAllTraiteursTools(int $payed): JsonResponse
     {
         try {
             $result = Traiteur::select('traiteur_tools.traiteur_id', 'traiteur_tools.dateStart', 'traiteur_tools.dateEnd', 'traiteur_tools.ClientId', 'traiteur_totals.Total', 'traiteur_totals.Advance', 'traiteur_totals.Payed')
@@ -119,7 +128,7 @@ class TraiteurController extends Controller
                 ->join('traiteur_totals', 'traiteurs.id', '=', 'traiteur_totals.traiteur_id')
                 ->join('clients', 'traiteur_tools.ClientId', '=', 'clients.id')
                 ->where('traiteur_tools.qty', '<>', 'traiteur_tools.returnedQty')
-                ->where('traiteur_totals.Payed', '=', false)
+                ->where('traiteur_totals.Payed', '=', (int) $payed)
                 ->distinct()
                 ->get();
 
@@ -132,10 +141,10 @@ class TraiteurController extends Controller
 
     function getTargetTraiteurs($id) : JsonResponse {
         try {
-            $traiteurs = traiteur_tools::select('traiteur_tools.id', 'traiteur_tools.tool_id', 'tools.name as tool_name', 'traiteur_tools.traiteur_id', 'traiteurs.Name as traiteur_name', 'traiteur_tools.qty', 'traiteur_tools.returnedQty', 'traiteur_tools.dateStart', 'traiteur_tools.dateEnd')
+            $traiteurs = traiteur_tools::select('traiteur_tools.id', 'traiteur_tools.tool_id', 'clients.FirstName', 'clients.LastName', 'traiteur_tools.price', 'tools.name as tool_name', 'traiteur_tools.qty', 'traiteur_tools.returnedQty', 'traiteur_tools.dateStart', 'traiteur_tools.dateEnd')
                 ->join('tools', 'traiteur_tools.tool_id', '=', 'tools.id')
-                ->join('traiteurs', 'traiteur_tools.traiteur_id', '=', 'traiteurs.id')
-                ->where('traiteur_tools.ClientId', $id)
+                ->join('clients', 'traiteur_tools.ClientId', '=', 'clients.id')
+                ->where('traiteur_tools.traiteur_id', $id)
                 ->get();
 
             return response() -> json(["response" => $traiteurs]);
@@ -167,32 +176,34 @@ class TraiteurController extends Controller
 
     function UpdateTraiteurTool(Request $request): JsonResponse
     {
+        DB::beginTransaction();
+
         try {
             $id = $request->input('id');
-            $ClientId = $request->input('ClientId');
-            $tool_id = $request->input('tool_id');
-            $traiteur_id = $request->input('traiteur_id');
             $price = $request->input('price');
             $qty = $request->input('qty');
             $returnedQty = $request -> input('returnedQty');
-            $dateStart = $request->input('dateStart');
-            $dateEnd = $request->input('dateEnd');
+            $traiteur_id = $request -> input("traiteur_id");
 
             $target = traiteur_tools::find($id);
+            $traiteurTotal = traiteur_total::where("traiteur_id", $traiteur_id) -> first();
 
-            if ($ClientId) $target->ClientId = $ClientId;
-            $target->tool_id = $tool_id;
-            $target->traiteur_id = $traiteur_id;
-            if ($price) $target->price = $price;
+            $new_total = $price * $qty;
+            $old_tatal = $target->price * $target->qty;
+
+            $target->price = $price;
             $target->qty = $qty;
-            if ($returnedQty) $target -> returnedQty = $returnedQty;
-            $target->dateStart = $dateStart;
-            $target->dateEnd = $dateEnd;
+            $target -> returnedQty = $returnedQty;
+
+            $traiteurTotal -> Total = abs(($traiteurTotal -> Total - $old_tatal) + $new_total);
 
             $target->save();
+            $traiteurTotal -> save();
 
+            DB::commit();
             return response()->json(["response" => true]);
         } catch (\Exception $e) {
+            DB::rollback();
             Log::error("The error in TraiteurController => UpdateTraiteurTool: " . $e->getMessage());
             return response()->json(["err" => "An error occurred on the server. Please try again later."], 500);
         }
@@ -210,4 +221,72 @@ class TraiteurController extends Controller
             return response()->json(["err" => "An error occurred on the server. Please try again later."], 500);
         }
     }
+
+    public function deleteTargetTraiteurTool($id, $price, $traiId): JsonResponse {
+        DB::beginTransaction();
+
+        try {
+            traiteur_tools::destroy($id);
+
+            $target = traiteur_total::where('traiteur_id', $traiId)->first();
+
+            if ($target -> Total - $price <= 0) {
+                $result = $target -> Total - $price;
+                $target -> Total = 0;
+                $target -> Advance += $result;
+
+                if ($target -> Advance <= 0) {
+                    traiteur_total::where('traiteur_id', $traiId) -> delete();
+                };
+            } else {
+                $target->Total = $target->Total - $price;
+            };
+
+            $target->save();
+
+            DB::commit();
+
+            return response()->json(["response" => true]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Error in TraiteurController => deleteTargetTraiteurTool: " . $e->getMessage());
+            return response()->json(["err" => "An error occurred on the server. Please try again later."], 500);
+        }
+    }
+
+    function UpdateTraiteurData(Request $request): JsonResponse {
+    DB::beginTransaction();
+
+    try {
+        $id = $request->input("id");
+        $ClientId = $request->input("ClientId");
+        $Advance = $request->input("Advance");
+        $dateStart = $request->input("dateStart");
+        $dateEnd = $request->input("dateEnd");
+        $payment = $request->input("Payed");
+
+        traiteur_tools::where('traiteur_id', $id)->update([
+            'ClientId' => $ClientId,
+            'dateStart' => $dateStart,
+            'dateEnd' => $dateEnd
+        ]);
+
+        $total = traiteur_total::where('traiteur_id', $id)->first();
+
+        Log::alert($payment);
+
+        $total->Total = $total->Total + $total->Advance - $Advance;
+        $total->Advance = $Advance;
+        $total->Payed = $payment;
+        $total->save();
+
+        DB::commit();
+
+        return response()->json(["response" => true]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error("Error in TraiteurController => UpdateTraiteurData: " . $e->getMessage());
+        return response()->json(["err" => "An error occurred on the server. Please try again later."], 500);
+    }
+}
 }

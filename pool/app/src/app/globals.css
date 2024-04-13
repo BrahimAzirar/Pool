@@ -277,7 +277,8 @@ form input[type="submit"],
 input[type="button"],
 #UpdateTraiteur_Tool>form>div button,
 #Client_Page > div:first-of-type > form > div:last-of-type button,
-#CountsClient button {
+#CountsClient button,
+.bottom-content > div:last-child button {
   cursor: pointer;
   padding: 5px 10px;
   background: #56B9E1;
@@ -448,8 +449,8 @@ table tbody tr {
 #UpdateTraiteur_Tool {
   position: absolute;
   padding: 15px 20px;
-  width: 550px;
-  height: 300px;
+  width: 450px;
+  height: 350px;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
@@ -475,14 +476,10 @@ table tbody tr {
 }
 
 #UpdateTraiteur_Tool>form {
-  margin-top: 20px;
+  margin-top: 15px;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-}
-
-#UpdateTraiteur_Tool>form>div:not(:first-of-type, :last-of-type) {
-  width: calc(95% / 2);
 }
 
 #UpdateTraiteur_Tool>form>div:not(:last-of-type) {
@@ -620,4 +617,38 @@ table tbody tr {
 #expensesForm > div:first-child > div input,
 #FormCafeePage > div:first-child > div input {
   width: 100%;
+}
+
+.filterTraiteurTools {
+  width: 80%;
+  display: flex;
+  justify-content: space-evenly;
+  margin-top: 20px;
+}
+
+.filterTraiteurTools > div {
+  display: flex;
+  align-items: center;
+}
+
+.filterTraiteurTools > div input {
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+#PicinePool {
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.bottom-content > div:last-child {
+  width: 70%;
+  margin: 30px auto 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.bottom-content > div:last-child input {
+  width: 45%;
 }

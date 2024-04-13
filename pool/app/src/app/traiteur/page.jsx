@@ -24,6 +24,7 @@ export default function traiteur() {
   const [ToolId, setToolId] = useState(null);
   const [Clients, setClients] = useState([]);
 
+  const notPayed = useRef();
   const TraiteurForm = useRef();
   const TargetTraiteur = useRef();
   const DateStart = useRef();
@@ -62,18 +63,6 @@ export default function traiteur() {
       }
     };
 
-    const getAllTraiteursTools = async () => {
-      try {
-        const result = await (
-          await axios.get("/api/getAllTraiteursTools")
-        ).data;
-        if (result.err) throw new Error(result.err);
-        setTraiteurTools(result.response);
-      } catch (error) {
-        alert(error.message);
-      }
-    };
-
     fetchTool();
     getAllTraiteurs();
     GetAllClients();
@@ -83,6 +72,19 @@ export default function traiteur() {
   useEffect(() => {
     setFakeTotal(Totatl);
   }, [Totatl]);
+
+  const getAllTraiteursTools = async (payed = 0) => {
+    try {
+      const result = await (
+        await axios.get(`/api/getAllTraiteursTools/${payed}`)
+      ).data;
+      if (result.err) throw new Error(result.err);
+      setTraiteurTools(result.response);
+      if (!payed) notPayed.current.checked = true;
+    } catch (error) {
+      alert(error.message);
+    }
+  };
 
   const editTools = async (e) => {
     e.preventDefault();
@@ -168,16 +170,16 @@ export default function traiteur() {
   const checkSelected = (e) => {
     const tool_id = e.target.value;
     const price =
-        e.target.parentElement.nextElementSibling.nextElementSibling.children[0]
-          .value;
-      const quantity =
-        e.target.parentElement.nextElementSibling.nextElementSibling
-          .nextElementSibling.children[0].value;
+      e.target.parentElement.nextElementSibling.nextElementSibling.children[0]
+        .value;
+    const quantity =
+      e.target.parentElement.nextElementSibling.nextElementSibling
+        .nextElementSibling.children[0].value;
     if (e.target.checked) {
-      setTotal(prev => prev + (price * quantity));
+      setTotal((prev) => prev + price * quantity);
       setTraiteurs([...Traiteurs, { tool_id, price, quantity }]);
     } else {
-      setTotal(prev => prev - (price * quantity));
+      setTotal((prev) => prev - price * quantity);
       setTraiteurs((prev) => {
         return prev.filter((ele) => ele.tool_id !== tool_id);
       });
@@ -200,7 +202,7 @@ export default function traiteur() {
         Traiteurs,
         targetClient,
         Totatl: FakeTotal,
-        advance
+        advance,
       };
 
       const result = await (
@@ -208,14 +210,42 @@ export default function traiteur() {
       ).data;
       if (result.err) throw new Error(result.err);
       if (result.response) {
-        setTraiteurTools((prevTraiteurTools) => [...prevTraiteurTools, {
-          traiteur_id: targetTraitreur, dateStart, dateEnd,
-          ClientId: targetClient, Total: FakeTotal,
-          Advance: advance, Payed: false
-        }]);
-        TargetTraiteur.current.value = "";
-        TargetTraiteur.current.value = "";
-        DateEnd.current.value = "";
+        setTraiteurTools((prev) => {
+          let updated = false;
+
+          const new_data = prev.map((ele) => {
+            if (ele.traiteur_id == targetTraitreur) {
+              const newAdvance = advance || 0;
+
+              const updatedElement = {
+                ...ele,
+                Total: ele.Total + FakeTotal,
+                Advance: parseInt(ele.Advance) + parseInt(newAdvance),
+              };
+
+              updated = true;
+              return updatedElement;
+            }
+
+            return ele;
+          });
+
+          if (!updated) {
+            const newElement = {
+              traiteur_id: targetTraitreur,
+              dateStart,
+              dateEnd,
+              ClientId: targetClient,
+              Total: FakeTotal,
+              Advance: advance || 0,
+              Payed: false,
+            };
+
+            new_data.push(newElement);
+          }
+
+          return new_data;
+        });
       }
     } catch (error) {
       alert(error.message);
@@ -283,8 +313,6 @@ export default function traiteur() {
       {UpdateTraiteurTool ? (
         <UpdateTraiteur_Tool
           data={data_we_want_to_updated}
-          tools={tools}
-          traiteurs={RegesteredTraiteurs}
           clients={Clients}
           callback1={setUpdateTraiteurTool}
           callback2={setTraiteurTools}
@@ -494,16 +522,17 @@ export default function traiteur() {
                     ref={Advance}
                     placeholder="Avance"
                     style={{ width: "50%" }}
-                    onChange={e => setFakeTotal(() => {
-                      if (e.target.value == '')
-                        return Totatl;
-                      if (parseInt(e.target.value) < 0 || Totatl == 0)
-                        return 0;
-                      return Totatl - parseInt(e.target.value);
-                    })}
+                    onChange={(e) =>
+                      setFakeTotal(() => {
+                        if (e.target.value == "") return Totatl;
+                        if (parseInt(e.target.value) < 0 || Totatl == 0)
+                          return 0;
+                        return Totatl - parseInt(e.target.value);
+                      })
+                    }
                   />
                   <p style={{ margin: "0", fontSize: "1.3rem" }}>
-                    <span>{ FakeTotal }</span> DH
+                    <span>{FakeTotal}</span> DH
                   </p>
                 </div>
                 <div className="submit-traiteur">
@@ -557,9 +586,9 @@ export default function traiteur() {
                           <td>
                             {FirstName} {LastName}
                           </td>
-                          <td>{ item.Total }</td>
-                          <td>{ item.Advance ? item.Advance : 0 }</td>
-                          <td> impayé </td>
+                          <td>{item.Total}</td>
+                          <td>{item.Advance ? item.Advance : 0}</td>
+                          <td> {item.Payed ? "payé" : 'impayé'} </td>
                           <td style={{ fontSize: ".8rem" }}>
                             {item.dateStart}
                           </td>
@@ -575,7 +604,9 @@ export default function traiteur() {
                               update
                             </button>
                             <button
-                              onClick={(e) => DeleteTraiteurTool(e, item.traiteur_id)}
+                              onClick={(e) =>
+                                DeleteTraiteurTool(e, item.traiteur_id)
+                              }
                             >
                               delete
                             </button>
@@ -587,6 +618,29 @@ export default function traiteur() {
                 </table>
               </div>
             </form>
+            <div className="filterTraiteurTools">
+              <div>
+                <label htmlFor="payed">Les événements sont payants</label>
+                <input
+                  type="radio"
+                  name="active"
+                  id="payed"
+                  onChange={() => getAllTraiteursTools(1)}
+                />
+              </div>
+              <div>
+                <label htmlFor="notPayed">
+                  Les événements ne sont pas payants
+                </label>
+                <input
+                  type="radio"
+                  name="active"
+                  id="notPayed"
+                  ref={notPayed}
+                  onChange={() => getAllTraiteursTools(0)}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

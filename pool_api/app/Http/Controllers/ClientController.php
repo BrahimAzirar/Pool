@@ -15,7 +15,7 @@ class ClientController extends Controller
             $Clients = Client::all();
             return response() -> json(['response' => $Clients]);
         } catch (\Exception $e) {
-            Log::error("The error in TraiteurController => index: ". $e->getMessage());
+            Log::error("The error in ClientController => index: ". $e->getMessage());
             return response() -> json(["err" => "An error in the server try later"]);
         }
     }
@@ -35,7 +35,7 @@ class ClientController extends Controller
 
             return response() -> json(["response" => $client -> id]);
         } catch (\Exception $e) {
-            Log::error("The error in TraiteurController => store: ". $e->getMessage());
+            Log::error("The error in ClientController => store: ". $e->getMessage());
             return response() -> json(["err" => "An error in the server try later"]);
         }
     }
@@ -44,8 +44,7 @@ class ClientController extends Controller
     public function update(Request $request, Client $client)
     {
         try {
-            Log::alert($request);
-            $client->ClientCIN = $request->CIN;
+            $client->ClientCIN = $request->ClientCIN;
             $client->FirstName = $request->FirstName;
             $client->LastName = $request->LastName;
             $client->Email = $request->Email;
@@ -55,7 +54,7 @@ class ClientController extends Controller
 
             return response()->json(["response" => true]);
         } catch (\Exception $e) {
-            Log::error("The error in TraiteurController => update: ". $e->getMessage());
+            Log::error("The error in ClientController => update: ". $e->getMessage());
             return response() -> json(["err" => "An error in the server try later"]);
         }
     }
@@ -66,7 +65,7 @@ class ClientController extends Controller
             $client -> delete();
             return response() -> json(["response" => true]);
         } catch (\Exception $e) {
-            Log::error("The error in TraiteurController => destroy: ". $e->getMessage());
+            Log::error("The error in ClientController => destroy: ". $e->getMessage());
             return response() -> json(["err" => "An error in the server try later"]);
         }
     }

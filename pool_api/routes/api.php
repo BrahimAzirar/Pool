@@ -9,9 +9,6 @@ use App\Http\Controllers\PoolController;
 use App\Http\Controllers\SalleController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\TraiteurController;
-use App\Http\Controllers\TraiteurToolController;
-
-
 
 /*
 |--------------------------------------------------------------------------
@@ -42,9 +39,11 @@ Route::post("/AddTraiteurs", [TraiteurController::class, "AddTraiteurs"]);
 Route::get("/getAllTraiteurs", [TraiteurController::class, "GetTraiteurs"]);
 Route::delete("/deleteTraiteur/{id}", [TraiteurController::class, "deleteTraiteur"]);
 Route::post("/updateTraiteur", [TraiteurController::class, "updateTraiteur"]);
-Route::post("/AddTraiteurTool", [TraiteurController::class, "AddTraiteurTool"]);
-Route::get("/getAllTraiteursTools", [TraiteurController::class, "getAllTraiteursTools"]);
+Route::post("/AddTraiteurTool", [TraiteurController::class, "AddTraiteurTool"]) -> middleware('traiteurIsExist');
+Route::get("/getAllTraiteursTools/{payed}", [TraiteurController::class, "getAllTraiteursTools"]);
 Route::get("/getTargetTraiteurs/{id}", [TraiteurController::class, "getTargetTraiteurs"]);
 Route::delete("/deleteTraiteursTool/{id}", [TraiteurController::class, "deleteTraiteursTool"]);
 Route::post('/UpdateTraiteurTool', [TraiteurController::class, "UpdateTraiteurTool"]);
 Route::get("/getToolsData/{id}", [TraiteurController::class, "getToolsData"]);
+Route::delete("/deleteTargetTraiteurTool/{id}/{price}/{traiId}", [TraiteurController::class, "deleteTargetTraiteurTool"]);
+Route::post('/UpdateTraiteurData', [TraiteurController::class, "UpdateTraiteurData"]);
