@@ -12,23 +12,47 @@ export default function piscine() {
   const [UpdatePicine, setUpdatePicine] = useState(false);
   const [Total, setTotal] = useState(0);
   const [DatePool, setDatePool] = useState("");
+  const [Clients, setClients] = useState([]);
+  const [SelectedClient, setSelectedClient] = useState(null);
 
   const conponentPDF = useRef();
   const OffersContainer = useRef();
+  const DATE = new Date();
+  const year = DATE.getFullYear();
+  const month = DATE.getMonth() + 1;
+  const day = DATE.getDate();
+  const formattedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
 
   useEffect(() => {
-    const fetchPiscine = async () => {
+    const GetAllClients = async () => {
       try {
-        const result = await (await axios.get("/api/pools")).data;
+        const result = await (await axios.get("/api/client")).data;
         if (result.err) throw new Error(result.err);
-        setPiscine(result.response);
+        setClients(result.response);
       } catch (error) {
         alert(error.message);
       }
     };
 
+    GetAllClients();
     fetchPiscine();
   }, []);
+
+  useEffect(() => {
+    if (piscine.length) {
+      getTotal();
+    };
+  }, [piscine]);
+
+  const fetchPiscine = async (date = formattedDate) => {
+    try {
+      const result = await (await axios.get(`/api/pools/${date}`)).data;
+      if (result.err) throw new Error(result.err);
+      setPiscine(result.response);
+    } catch (error) {
+      alert(error.message);
+    }
+  };
 
   const editPiscine = async (e) => {
     e.preventDefault();
@@ -38,6 +62,7 @@ export default function piscine() {
         const reqData = new FormData();
         reqData.append("person", clientCounts);
         reqData.append("offer", Offers[0]);
+        reqData.append("SelectedClient", SelectedClient);
         reqData.append("_method", "PUT");
 
         const result = await (
@@ -50,6 +75,7 @@ export default function piscine() {
               if (ele.id == parseInt(piscineId)) {
                 ele.offer = Offers[0];
                 ele.add_person = clientCounts;
+                ele.SelectedClient = SelectedClient;
               }
 
               return ele;
@@ -69,12 +95,7 @@ export default function piscine() {
 
     try {
       const data = Offers.map((ele) => {
-        const DATE = new Date();
-        const year = DATE.getFullYear();
-        const month = DATE.getMonth() + 1;
-        const day = DATE.getDate();
-        const formattedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-        return { offer: ele, add_person: clientCounts, poolDate: formattedDate };
+        return { offer: ele, add_person: clientCounts, poolDate: formattedDate, SelectedClient };
       });
       const result = await (await axios.post("/api/pools", data)).data;
       if (result.err) throw new Error(result.err);
@@ -127,7 +148,7 @@ export default function piscine() {
 
   const getTotal = () => {
     const listOfTotal = piscine.map(ele => {
-      if (ele.poolDate === DatePool) {
+      if (ele.poolDate === DatePool ? DatePool : formattedDate) {
         return ele.offer * ele.add_person;
       };
     });
@@ -155,15 +176,33 @@ export default function piscine() {
         </div>
       </nav>
       <div className="content">
-        <form>
-          <div id="Offers" ref={OffersContainer}>
-            {[2, 3, 5, 10, 15, 20, 25, 30].map((ele) => {
-              return (
-                <div key={ele} onClick={ActiveOffer}>
-                  {ele}
-                </div>
-              );
-            })}
+        <form id="AddPicine">
+          <div>
+            <div id="Offers" ref={OffersContainer}>
+              {[2, 3, 5, 10, 15, 20, 25, 30].map((ele) => {
+                return (
+                  <div key={ele} onClick={ActiveOffer}>
+                    {ele}
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ width: "30%" }}>
+              <select onChange={e => setSelectedClient(() => {
+                if (e.target.value == "Choose client")
+                  return null;
+                return e.target.value;
+              })}>
+                <option value={null}>Choose client</option>
+                {
+                  Clients.map(ele => {
+                    return <option value={ele.id} key={ele.id}>
+                      {ele.FirstName} {ele.LastName}
+                    </option>
+                  })
+                }
+              </select>
+            </div>
           </div>
           <div id="CountsClient">
             <input
@@ -181,13 +220,24 @@ export default function piscine() {
             )}
           </div>
         </form>
-        <div className="bottom-content">
-          <input onClick={generatePDF} type="button" value="PDF" />
+        <div className="bottom-content" id="Picine-bottom-content">
+          <div>
+            <input onClick={generatePDF} type="button" value="PDF" />
+            <input
+              className="salle"
+              type="date"
+              style={{ width: "40%" }}
+              value={DatePool}
+              onChange={(e) => setDatePool(e.target.value)}
+            />
+            <button onClick={() => fetchPiscine(DatePool)}>calc total</button>
+          </div>
           <div className="table-pool">
             <table class="table" ref={conponentPDF}>
               <thead>
                 <tr>
                   <th scope="col">id</th>
+                  <th scope="col">client name</th>
                   <th scope="col">offer</th>
                   <th scope="col">the clients count</th>
                   <th scope="col">total</th>
@@ -197,9 +247,15 @@ export default function piscine() {
               </thead>
               <tbody>
                 {piscine.map((item) => {
+                  const client = Clients.find(
+                    (ele) => ele.id == item.SelectedClient
+                  );
+                  const { FirstName, LastName } = client || {};
+
                   return (
                     <tr key={item.id}>
                       <td>{item.id}</td>
+                      <td>{FirstName} {LastName}</td>
                       <td>{item.offer}</td>
                       <td>{item.add_person}</td>
                       <td>{item.offer * item.add_person}</td>
@@ -234,13 +290,6 @@ export default function piscine() {
           </div>
           <div>
             <p id="PicinePool">{Total} dh</p>
-            <input
-              className="salle"
-              type="date"
-              value={DatePool}
-              onChange={(e) => setDatePool(e.target.value)}
-            />
-            <button onClick={getTotal}>calc total</button>
           </div>
         </div>
       </div>

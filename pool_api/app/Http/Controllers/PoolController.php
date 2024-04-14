@@ -9,13 +9,12 @@ use Illuminate\Support\Facades\Log;
 
 class PoolController extends Controller
 {
-    public function index(): JsonResponse
-    {
+    function show($date): JsonResponse {
         try {
-            $data = Pool::all();
+            $data = Pool::where("poolDate", $date) -> get();
             return response() -> json(["response" => $data]);
         } catch (\Exception $e) {
-            Log::error("The error from PoolController in index(): ". $e -> getMessage());
+            Log::error("The error from PoolController in show(): ". $e -> getMessage());
             return response() -> json(["err" => "An error in the server. try later"]);
         }
     }
@@ -37,6 +36,7 @@ class PoolController extends Controller
         try {
             $pool->offer = $request->offer;
             $pool->add_person = $request->person;
+            $pool->SelectedClient = 0;
             $pool->save();
             return response()->json(["response" => true]);
         } catch (\Exception $e) {

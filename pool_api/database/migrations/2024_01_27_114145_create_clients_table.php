@@ -18,6 +18,8 @@ return new class extends Migration
             $table -> string("LastName", 15);
             $table -> string("Thel", 10);
             $table -> string('Email', 35);
+            $table -> boolean('isClient');
+            $table -> boolean('isSupplier');
             $table->timestamps();
         });
     }

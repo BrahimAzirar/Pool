@@ -263,7 +263,8 @@ input.salle {
 #UpdateTraiteur_Tool>form>div select,
 #UpdateTraiteur_Tool>form>div input,
 #ReturnedTools_Page > div:first-of-type select,
-.Salle_Client_Select {
+.Salle_Client_Select,
+#AddPicine > div:first-of-type > div:last-of-type select {
   width: 100%;
   background: #18191D;
   color: #fff;
@@ -278,7 +279,8 @@ input[type="button"],
 #UpdateTraiteur_Tool>form>div button,
 #Client_Page > div:first-of-type > form > div:last-of-type button,
 #CountsClient button,
-.bottom-content > div:last-child button {
+.bottom-content > div:last-child button,
+#Picine-bottom-content > div:first-child button {
   cursor: pointer;
   padding: 5px 10px;
   background: #56B9E1;
@@ -502,6 +504,7 @@ table tbody tr {
 
 #Client_Page, #ReturnedTools_Page {
   padding: 40px;
+  overflow-x: hidden;
 }
 
 #Client_Page > div:first-of-type > h1, 
@@ -551,10 +554,16 @@ table tbody tr {
 
 #PoolPage div#Offers {
   width: 25%;
-  margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
+}
+
+#AddPicine > div:first-of-type {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-evenly;
+  align-items: center;
 }
 
 #PoolPage div#Offers div {
@@ -641,14 +650,14 @@ table tbody tr {
   text-align: center;
 }
 
-.bottom-content > div:last-child {
+#Picine-bottom-content > div:last-child {
   width: 70%;
   margin: 30px auto 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-evenly;
 }
 
-.bottom-content > div:last-child input {
-  width: 45%;
+#Picine-bottom-content > div:first-child {
+  margin: 20px 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
 }

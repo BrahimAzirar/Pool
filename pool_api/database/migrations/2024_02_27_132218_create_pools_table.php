@@ -14,8 +14,11 @@ return new class extends Migration
         Schema::create('pools', function (Blueprint $table) {
             $table->id();
             $table->integer("offer");
+            $table->unsignedBigInteger("SelectedClient") -> nullable();
             $table->integer("add_person")->default(1);
             $table->date("poolDate");
+
+            $table->foreign('SelectedClient')->references('id')->on('clients')->onDelete('cascade');
             $table->timestamps();
         });
     }
