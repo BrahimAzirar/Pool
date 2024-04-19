@@ -117,10 +117,12 @@ grid-auto-rows: 150px; */
 }
 
 .part-2 {
+  width: 100%;
+  padding: 30px 25px 0 25px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-around;
+  justify-content: space-between;
 }
 
 .part-2 a img.icon {
@@ -134,8 +136,8 @@ grid-auto-rows: 150px; */
   justify-content: space-around;
 }
 
-.part-2 ul li {
-  margin-bottom: 35px;
+.part-2 ul li:not(:last-of-type) {
+  margin-bottom: 28px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -280,7 +282,9 @@ input[type="button"],
 #Client_Page > div:first-of-type > form > div:last-of-type button,
 #CountsClient button,
 .bottom-content > div:last-child button,
-#Picine-bottom-content > div:first-child button {
+#Picine-bottom-content > div:first-child button,
+#LoginPage form > div:not(:first-of-type) button,
+#SallesX987438 > div:first-of-type button {
   cursor: pointer;
   padding: 5px 10px;
   background: #56B9E1;
@@ -424,6 +428,7 @@ table tbody tr {
 .left-top-content {
   width: 100%;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
 }
@@ -645,12 +650,12 @@ table tbody tr {
   cursor: pointer;
 }
 
-#PicinePool {
+#PicinePool, #Salle_total p {
   font-size: 1.5rem;
   text-align: center;
 }
 
-#Picine-bottom-content > div:last-child {
+#Picine-bottom-content > div:last-child, #Salle_total {
   width: 70%;
   margin: 30px auto 0 auto;
 }
@@ -659,5 +664,77 @@ table tbody tr {
   margin: 20px 0;
   display: flex;
   justify-content: space-around;
+  align-items: center;
+}
+
+#LoginPage {
+  height: 100vh;
+  background-color: #0D0E13;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#LoginPage form {
+  width: 450px;
+  height: 300px;
+  background-color: #18191D;
+  border-radius: 7px;
+  padding: 30px;
+}
+
+#LoginPage form > div:first-of-type {
+  width: fit-content;
+  margin: 0 auto 30px auto;
+}
+
+#LoginPage form > div:first-of-type img {
+  width: 100px;
+}
+
+#LoginPage form > div:not(:first-of-type) {
+  width: 70%;
+  margin: 0 auto 15px auto;
+}
+
+#LoginPage form > div:not(:first-of-type) input,
+#LoginPage form > div:not(:first-of-type) button {
+  width: 100%;
+}
+
+#logoutbtn {
+  width: 100%;
+  padding: 7px 0;
+  font-size: 1.1rem;
+  background: none;
+  color: #7E7E7E;
+  font-weight: bold;
+  border: 2px solid #7E7E7E;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: .3s;
+}
+
+#logoutbtn:hover {
+  background-color: #7E7E7E;
+  color: white;
+}
+
+.desableSelect {
+  pointer-events: none;
+  opacity: .6;
+}
+
+#SallesX987438 > div:first-of-type {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+#SallesX987438 > div:first-of-type > div {
+  width: 50%;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
 }

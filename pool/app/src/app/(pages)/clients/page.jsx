@@ -1,7 +1,7 @@
 "use client";
 
 import axios from "@/lib/axios";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
 export default function page() {
@@ -19,6 +19,8 @@ export default function page() {
   const [UpdateClient, setUpdateClient] = useState(false);
 
   const TargetForm = useRef();
+  const is_client = useRef();
+  const is_supplier = useRef();
 
   useEffect(() => {
     const GetAllClients = async () => {
@@ -26,9 +28,11 @@ export default function page() {
         const result = await (await axios.get("/api/client")).data;
         if (result.err) throw new Error(result.err);
         setData(result.response);
+        setClients([]);
+        setSuppliers([]);
       } catch (error) {
         alert(error.message);
-      }
+      };
     };
 
     GetAllClients();
@@ -37,8 +41,10 @@ export default function page() {
   useEffect(() => {
     if (Data.length) {
       Data.forEach(ele => {
-        if (ele.isClient) setClients(prev => [...prev, ele]);
-        if (ele.isSupplier) setSuppliers(prev => [...new Set([...prev, ele])]);
+        if (parseInt(ele.isClient))
+          setClients(prev => [...prev, ele]);
+        if (parseInt(ele.isSupplier)) 
+          setSuppliers(prev => [...prev, ele]);
       });
     } else {
       setClients([]);
@@ -50,13 +56,14 @@ export default function page() {
     e.preventDefault();
 
     try {
+      setClients([]);
+      setSuppliers([]);
       const Req_Data = new FormData(TargetForm.current);
-      Req_Data.append('IsClient', parseInt(IsClient));
-      Req_Data.append('IsSupplier', parseInt(IsSupplier));
+      Req_Data.append('isClient', IsClient);
+      Req_Data.append('isSupplier', IsSupplier);
       const result = await (await axios.post("/api/client", Req_Data)).data;
       if (result.err) throw new Error(result.err);
       if (result.response) {
-        console.log(Object.fromEntries(Req_Data));
         setCIN("");
         setFirstName("");
         setLastName("");
@@ -97,12 +104,27 @@ export default function page() {
 
     try {
       const Req_data = new FormData(TargetForm.current);
+      Req_data.append('isClient', IsClient);
+      Req_data.append('isSupplier', IsSupplier);
       Req_data.append("_method", "PUT");
       const result = await (
         await axios.post(`/api/client/${ClientId}`, Req_data)
       ).data;
       if (result.err) throw new Error(result.err);
       if (result.response) {
+        setClients([]);
+        setSuppliers([]);
+        setCIN('');
+        setFirstName('');
+        setLastName('');
+        setEmail('');
+        setThel('');
+        setClientId(0);
+        setUpdateClient(false);
+        setIsClient(0);
+        setIsSupplier(0);
+        is_client.current.checked = false;
+        is_supplier.current.checked = false;
         const data = { id: ClientId, ...Object.fromEntries(Req_data) };
         setData((prev) =>
           prev.map((ele) => {
@@ -119,7 +141,7 @@ export default function page() {
   return (
     <div id="Client_Page">
       <div>
-        <h1>Add Client</h1>
+        <h1>إضافة عميل أو مورد</h1>
         <form ref={TargetForm}>
           <div>
             <input
@@ -136,7 +158,7 @@ export default function page() {
               type="text"
               className="salle"
               name="FirstName"
-              placeholder="FirstName"
+              placeholder="الاسم الأول"
               value={FirstName}
               onChange={(e) => setFirstName(e.target.value)}
             />
@@ -146,7 +168,7 @@ export default function page() {
               type="text"
               className="salle"
               name="LastName"
-              placeholder="LastName"
+              placeholder="اسم العائلة"
               value={LastName}
               onChange={(e) => setLastName(e.target.value)}
             />
@@ -156,7 +178,7 @@ export default function page() {
               type="text"
               className="salle"
               name="Thel"
-              placeholder="Thel"
+              placeholder="رقم الهاتف"
               value={Thel}
               onChange={(e) => setThel(e.target.value)}
             />
@@ -166,34 +188,36 @@ export default function page() {
               type="text"
               className="salle"
               name="Email"
-              placeholder="Email"
+              placeholder="بريد إلكتروني"
               value={Email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div>
             <div>
-              <label>is client: </label>
-              <input type="checkbox" onChange={e => {
+              <label>عميل: </label>
+              <input type="checkbox" ref={is_client} onChange={e => {
                 if (e.target.checked)
                   setIsClient(1);
+                else setIsClient(0);
               }}/>
             </div>
             <div>
             <div>
-              <label>is supplier: </label>
-              <input type="checkbox" onChange={e => {
+              <label>المورد: </label>
+              <input type="checkbox" ref={is_supplier} onChange={e => {
                 if (e.target.checked)
                   setIsSupplier(1);
+                else setIsSupplier(0);
               }}/>
             </div>
             </div>
           </div>
           <div>
             {UpdateClient ? (
-              <button onClick={updateClient}>Update client</button>
+              <button onClick={updateClient}>تحديث</button>
             ) : (
-              <button onClick={AddClient}>Add client</button>
+              <button onClick={AddClient}>إضافة</button>
             )}
           </div>
         </form>
@@ -201,7 +225,7 @@ export default function page() {
       {Clients.length ? (
         <div className="bottom-content">
           <div className="head-table" style={{ margin: "0 auto" }}>
-            <p>List Des Clients :</p>
+            <p>قائمة العملاء :</p>
             <div className="filter">
               Filter
               <Image width={10} height={10} src="/imgs/filter.png" alt="" />
@@ -215,13 +239,13 @@ export default function page() {
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Client Id</th>
+                    <th>معرف العميل</th>
                     <th>CIN</th>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Thel</th>
-                    <th>Email</th>
-                    <th>Action</th>
+                    <th>الاسم الأول</th>
+                    <th>اسم العائلة</th>
+                    <th>رقم التليفون</th>
+                    <th>بريد إلكتروني</th>
+                    <th>الاختيارات</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -246,6 +270,13 @@ export default function page() {
                               setThel(ele.Thel);
                               setClientId(ele.id);
                               setUpdateClient(true);
+                              setIsClient(1);
+                              is_client.current.checked = true;
+
+                              if (parseInt(ele.isSupplier)) {
+                                is_supplier.current.checked = true;
+                                setIsSupplier(1);
+                              };
                             }}
                           >
                             update
@@ -280,13 +311,13 @@ export default function page() {
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Supplier Id</th>
+                    <th>معرف المورد</th>
                     <th>CIN</th>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Thel</th>
-                    <th>Email</th>
-                    <th>Action</th>
+                    <th>الاسم الأول</th>
+                    <th>اسم العائلة</th>
+                    <th>رقم التليفون</th>
+                    <th>بريد إلكتروني</th>
+                    <th>الاختيارات</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -311,6 +342,13 @@ export default function page() {
                               setThel(ele.Thel);
                               setClientId(ele.id);
                               setUpdateClient(true);
+                              setIsSupplier(1);
+                              is_supplier.current.checked = true;
+
+                              if (parseInt(ele.isClient)) {
+                                is_client.current.checked = true;
+                                setIsClient(1);
+                              };
                             }}
                           >
                             update

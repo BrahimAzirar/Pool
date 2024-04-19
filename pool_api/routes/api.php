@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CafeController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\PoolController;
 use App\Http\Controllers\SalleController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\TraiteurController;
+use App\Models\admin;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,7 +35,8 @@ Route::apiResource("salles", SalleController::class);
 Route::apiResource("pools", PoolController::class);
 Route::apiResource('client', ClientController::class);
 
-Route::get("salle", [SalleController::class, "index_salle"]);
+Route::post("/grandSalles", [SalleController::class, "GrandSalles"]);
+Route::post("/petiteSalles", [SalleController::class, "PetiteSalles"]);
 
 Route::post("/AddTraiteurs", [TraiteurController::class, "AddTraiteurs"]);
 Route::get("/getAllTraiteurs", [TraiteurController::class, "GetTraiteurs"]);
@@ -47,3 +50,7 @@ Route::post('/UpdateTraiteurTool', [TraiteurController::class, "UpdateTraiteurTo
 Route::get("/getToolsData/{id}", [TraiteurController::class, "getToolsData"]);
 Route::delete("/deleteTargetTraiteurTool/{id}/{price}/{traiId}", [TraiteurController::class, "deleteTargetTraiteurTool"]);
 Route::post('/UpdateTraiteurData', [TraiteurController::class, "UpdateTraiteurData"]);
+
+Route::post("/adminIsExist", [AdminController::class, 'AdminIsExist']) -> middleware('api-session');
+Route::get("/adminIsAuth", [AdminController::class, 'AdminIsAuth']) -> middleware('api-session');
+Route::get("/logout", [AdminController::class, 'Logout']) -> middleware('api-session');

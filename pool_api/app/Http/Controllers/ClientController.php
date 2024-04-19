@@ -30,8 +30,8 @@ class ClientController extends Controller
             $client -> LastName = $request -> input("LastName");
             $client -> Thel = $request -> input("Thel");
             $client -> Email = $request -> input("Email");
-            $client -> isClient = $request -> input("IsClient");
-            $client -> isSupplier = $request -> input("IsSupplier");
+            $client -> isClient = $request -> input("isClient");
+            $client -> isSupplier = $request -> input("isSupplier");
 
             $client -> save();
 
@@ -51,6 +51,8 @@ class ClientController extends Controller
             $client->LastName = $request->LastName;
             $client->Email = $request->Email;
             $client->Thel = $request->Thel;
+            $client->isClient = $request->isClient;
+            $client->isSupplier = $request->isSupplier;
 
             $client->save();
 

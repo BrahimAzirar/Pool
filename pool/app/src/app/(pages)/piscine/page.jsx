@@ -14,6 +14,14 @@ export default function piscine() {
   const [DatePool, setDatePool] = useState("");
   const [Clients, setClients] = useState([]);
   const [SelectedClient, setSelectedClient] = useState(null);
+  const [SelectedPaymentMethod, setSelectedPaymentMethod] =
+    useState("pay cash");
+  const PaymentMethods = {
+    "pay cash": "ادفع نقدا",
+    "Payment by check": "الدفع عن طريق الشيكات",
+    "successive payments": "الدفعات المتتالية",
+    Credit: "كريدي",
+  };
 
   const conponentPDF = useRef();
   const OffersContainer = useRef();
@@ -21,7 +29,9 @@ export default function piscine() {
   const year = DATE.getFullYear();
   const month = DATE.getMonth() + 1;
   const day = DATE.getDate();
-  const formattedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+  const formattedDate = `${year}-${month.toString().padStart(2, "0")}-${day
+    .toString()
+    .padStart(2, "0")}`;
 
   useEffect(() => {
     const GetAllClients = async () => {
@@ -41,7 +51,7 @@ export default function piscine() {
   useEffect(() => {
     if (piscine.length) {
       getTotal();
-    };
+    }
   }, [piscine]);
 
   const fetchPiscine = async (date = formattedDate) => {
@@ -49,6 +59,7 @@ export default function piscine() {
       const result = await (await axios.get(`/api/pools/${date}`)).data;
       if (result.err) throw new Error(result.err);
       setPiscine(result.response);
+      if (!result.response.length) setTotal(0);
     } catch (error) {
       alert(error.message);
     }
@@ -62,7 +73,8 @@ export default function piscine() {
         const reqData = new FormData();
         reqData.append("person", clientCounts);
         reqData.append("offer", Offers[0]);
-        reqData.append("SelectedClient", SelectedClient);
+        if (SelectedClient) reqData.append("SelectedClient", SelectedClient);
+        reqData.append("PaymentMethod", SelectedPaymentMethod);
         reqData.append("_method", "PUT");
 
         const result = await (
@@ -76,7 +88,8 @@ export default function piscine() {
                 ele.offer = Offers[0];
                 ele.add_person = clientCounts;
                 ele.SelectedClient = SelectedClient;
-              }
+                ele.PaymentMethod = SelectedPaymentMethod;
+              };
 
               return ele;
             })
@@ -95,7 +108,13 @@ export default function piscine() {
 
     try {
       const data = Offers.map((ele) => {
-        return { offer: ele, add_person: clientCounts, poolDate: formattedDate, SelectedClient };
+        return {
+          offer: ele,
+          add_person: clientCounts,
+          poolDate: formattedDate,
+          SelectedClient,
+          PaymentMethod: SelectedPaymentMethod,
+        };
       });
       const result = await (await axios.post("/api/pools", data)).data;
       if (result.err) throw new Error(result.err);
@@ -106,10 +125,27 @@ export default function piscine() {
         Array.from(OffersContainer.current.children).forEach((ele) => {
           ele.classList.remove("ActiveOffer");
         });
-        data.reverse().forEach(({ offer, add_person, poolDate }) => {
-          dataReturned.push({ id, offer, add_person, poolDate });
-          id -= 1;
-        });
+        data
+          .reverse()
+          .forEach(
+            ({
+              offer,
+              add_person,
+              poolDate,
+              SelectedClient,
+              PaymentMethod,
+            }) => {
+              dataReturned.push({
+                id,
+                offer,
+                add_person,
+                poolDate,
+                SelectedClient,
+                PaymentMethod,
+              });
+              id -= 1;
+            }
+          );
         dataReturned = dataReturned.reverse();
         setPiscine((prev) => [...prev, ...dataReturned]);
       }
@@ -147,15 +183,15 @@ export default function piscine() {
   };
 
   const getTotal = () => {
-    const listOfTotal = piscine.map(ele => {
+    const listOfTotal = piscine.map((ele) => {
       if (ele.poolDate === DatePool ? DatePool : formattedDate) {
         return ele.offer * ele.add_person;
-      };
+      }
     });
 
     let someOfTotal = 0;
 
-    listOfTotal.forEach(ele => {
+    listOfTotal.forEach((ele) => {
       if (ele) someOfTotal += ele;
     });
 
@@ -171,7 +207,7 @@ export default function piscine() {
     <div id="PoolPage" className="part-1">
       <nav>
         <div className="left-nav">
-          <h1>piscine</h1>
+          <h1>حمام سباحة</h1>
           <div>Votre piscine Personnel</div>
         </div>
       </nav>
@@ -188,19 +224,42 @@ export default function piscine() {
               })}
             </div>
             <div style={{ width: "30%" }}>
-              <select onChange={e => setSelectedClient(() => {
-                if (e.target.value == "Choose client")
-                  return null;
-                return e.target.value;
-              })}>
-                <option value={null}>Choose client</option>
-                {
-                  Clients.map(ele => {
-                    return <option value={ele.id} key={ele.id}>
-                      {ele.FirstName} {ele.LastName}
-                    </option>
+              <select
+                style={{ marginBottom: "15px" }}
+                value={SelectedClient}
+                onChange={(e) =>
+                  setSelectedClient(() => {
+                    if (e.target.value == "اختر العميل") {
+                      setSelectedPaymentMethod("pay cash");
+                      return null;
+                    };
+                    return e.target.value;
                   })
                 }
+              >
+                <option value={null}>اختر العميل</option>
+                {Clients.map((ele) => {
+                  return (
+                    <option value={ele.id} key={ele.id}>
+                      {ele.FirstName} {ele.LastName}
+                    </option>
+                  );
+                })}
+              </select>
+              <select
+                className={SelectedClient ? "" : "desableSelect"}
+                value={SelectedPaymentMethod}
+                onChange={(e) => {
+                  setSelectedPaymentMethod(e.target.value);
+                }}
+              >
+                {Object.keys(PaymentMethods).map((ele) => {
+                  return (
+                    <option value={ele} key={ele}>
+                      {PaymentMethods[ele]}
+                    </option>
+                  );
+                })}
               </select>
             </div>
           </div>
@@ -214,9 +273,9 @@ export default function piscine() {
               placeholder="Enter the clients count"
             />
             {UpdatePicine ? (
-              <button onClick={editPiscine}>Update piscine offers</button>
+              <button onClick={editPiscine}>تحديث</button>
             ) : (
-              <button onClick={AddPoolOffer}>Send piscine offers</button>
+              <button onClick={AddPoolOffer}>إضافة</button>
             )}
           </div>
         </form>
@@ -236,13 +295,14 @@ export default function piscine() {
             <table class="table" ref={conponentPDF}>
               <thead>
                 <tr>
-                  <th scope="col">id</th>
-                  <th scope="col">client name</th>
-                  <th scope="col">offer</th>
-                  <th scope="col">the clients count</th>
-                  <th scope="col">total</th>
-                  <th scope="col">date</th>
-                  <th scope="col">action</th>
+                  <th scope="col">المعرف</th>
+                  <th scope="col">اسم العميل</th>
+                  <th scope="col">العرض</th>
+                  <th scope="col">عدد العملاء</th>
+                  <th scope="col">مجموع</th>
+                  <th scope="col">طرق الدفع</th>
+                  <th scope="col">تاريخ</th>
+                  <th scope="col">الاختيارات</th>
                 </tr>
               </thead>
               <tbody>
@@ -255,10 +315,13 @@ export default function piscine() {
                   return (
                     <tr key={item.id}>
                       <td>{item.id}</td>
-                      <td>{FirstName} {LastName}</td>
+                      <td>
+                        {FirstName} {LastName}
+                      </td>
                       <td>{item.offer}</td>
                       <td>{item.add_person}</td>
                       <td>{item.offer * item.add_person}</td>
+                      <th>{PaymentMethods[item.PaymentMethod]}</th>
                       <td>{item.poolDate}</td>
                       <td>
                         <button
@@ -267,6 +330,8 @@ export default function piscine() {
                             setclientCounts(item.add_person);
                             setUpdatePicine(true);
                             setPiscineId(item.id);
+                            setSelectedClient(item.SelectedClient);
+                            setSelectedPaymentMethod(item.PaymentMethod);
                             Array.from(
                               OffersContainer.current.children
                             ).forEach((ele) => {

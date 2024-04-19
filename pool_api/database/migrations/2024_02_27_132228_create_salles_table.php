@@ -18,6 +18,7 @@ return new class extends Migration
             $table->dateTime("date_start");
             $table->dateTime("date_end");
             $table->double("price");
+            $table -> string('PaymentMethod', 35);
             $table->timestamps();
 
             $table->foreign('ClientId')->references('id')->on('clients')->onDelete('cascade');

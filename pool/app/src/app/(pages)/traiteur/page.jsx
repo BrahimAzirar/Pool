@@ -318,22 +318,22 @@ export default function traiteur() {
           callback2={setTraiteurTools}
         />
       ) : null}
-      <div class="part-1">
+      <div className="part-1" id="TraiteurContentX98723">
         <nav>
-          <div class="left-nav">
-            <h1>traiteur</h1>
+          <div className="left-nav">
+            <h1>الأحدات</h1>
             <div>Ajoute les outil et les commandes</div>
           </div>
         </nav>
-        <div class="content">
+        <div className="content">
           <form>
-            <div class="top-content">
-              <div class="left-top-content">
-                <p>Ajoute l'outil:</p>
+            <div className="top-content">
+              <div className="left-top-content">
+                <p>إضافة أداة:</p>
                 <input
                   type="text"
                   className="salle"
-                  placeholder="ajoute outil...."
+                  placeholder="إضافة أداة...."
                   name="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -347,13 +347,13 @@ export default function traiteur() {
             )}
           </form>
           <form ref={TraiteurForm}>
-            <div class="top-content">
-              <div class="left-top-content">
-                <p>Ajoute traiteur:</p>
+            <div className="top-content">
+              <div className="left-top-content">
+                <p>إضافة حدث:</p>
                 <input
                   type="text"
                   className="salle"
-                  placeholder="ajoute fête...."
+                  placeholder="إضافة حدث...."
                   name="name"
                   value={TraiteurName}
                   onChange={(e) => setTraiteurName(e.target.value)}
@@ -588,7 +588,7 @@ export default function traiteur() {
                           </td>
                           <td>{item.Total}</td>
                           <td>{item.Advance ? item.Advance : 0}</td>
-                          <td> {item.Payed ? "payé" : 'impayé'} </td>
+                          <td> {item.Payed ? "payé" : "impayé"} </td>
                           <td style={{ fontSize: ".8rem" }}>
                             {item.dateStart}
                           </td>

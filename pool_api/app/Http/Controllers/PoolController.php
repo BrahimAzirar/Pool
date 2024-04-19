@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Pool;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class PoolController extends Controller
@@ -36,14 +37,23 @@ class PoolController extends Controller
         try {
             $pool->offer = $request->offer;
             $pool->add_person = $request->person;
-            $pool->SelectedClient = 0;
+
+            if ($request->has('SelectedClient')) {
+                $pool->SelectedClient = $request->SelectedClient;
+            } else {
+                $pool->SelectedClient = null;
+            }
+
+            $pool->PaymentMethod = $request->PaymentMethod;
             $pool->save();
+
             return response()->json(["response" => true]);
         } catch (\Exception $e) {
-            Log::error("The error from PoolController in update(): ". $e -> getMessage());
-            return response() -> json(["err" => "An error in the server. try later"]);
+            Log::error("The error from PoolController in update(): " . $e->getMessage());
+            return response()->json(["err" => "An error occurred. Please try again later."], 500);
         }
     }
+
 
     public function destroy(Pool $pool): JsonResponse
     {
