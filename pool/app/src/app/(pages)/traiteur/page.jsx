@@ -8,6 +8,9 @@ import styles from "./page.module.css";
 import UpdateTraiteur_Tool from "./UpdatePage";
 
 export default function traiteur() {
+  const [filterDateStart, setfilterDateStart] = useState('');
+  const [filterDateEnd, setfilterDateEnd] = useState('');
+  const [EventsTotal, setEventsTotal] = useState(0);
   const [Totatl, setTotal] = useState(0);
   const [FakeTotal, setFakeTotal] = useState(0);
   const [data_we_want_to_updated, setdata_we_want_to_updated] = useState({});
@@ -23,6 +26,14 @@ export default function traiteur() {
   const [UpdateToolName, setUpdateToolName] = useState(false);
   const [ToolId, setToolId] = useState(null);
   const [Clients, setClients] = useState([]);
+  const [SelectedPaymentMethod, setSelectedPaymentMethod] =
+    useState("pay cash");
+  const PaymentMethods = {
+    "pay cash": "ادفع نقدا",
+    "Payment by check": "الدفع عن طريق الشيكات",
+    "successive payments": "الدفعات المتتالية",
+    "Credit": "كريدي",
+  };
 
   const notPayed = useRef();
   const TraiteurForm = useRef();
@@ -31,6 +42,14 @@ export default function traiteur() {
   const DateEnd = useRef();
   const TargetClient = useRef();
   const Advance = useRef();
+
+  const DATE = new Date();
+  const year = DATE.getFullYear();
+  const month = DATE.getMonth() + 1;
+  const day = DATE.getDate();
+  const formattedDate = `${year}-${month.toString().padStart(2, "0")}-${day
+    .toString()
+    .padStart(2, "0")}`;
 
   useEffect(() => {
     const fetchTool = async () => {
@@ -66,21 +85,31 @@ export default function traiteur() {
     fetchTool();
     getAllTraiteurs();
     GetAllClients();
-    getAllTraiteursTools();
+    getAllTraiteursTools({ now: formattedDate });
   }, []);
+
+  useEffect(() => {
+    setEventsTotal(0);
+    if (TraiteurTools.length) {
+      TraiteurTools.forEach(ele => {
+        setEventsTotal(prev => prev + ele.Total);
+      })
+    } else {
+      setEventsTotal(0);
+    }
+  }, [TraiteurTools]);
 
   useEffect(() => {
     setFakeTotal(Totatl);
   }, [Totatl]);
 
-  const getAllTraiteursTools = async (payed = 0) => {
+  const getAllTraiteursTools = async (data) => {
     try {
       const result = await (
-        await axios.get(`/api/getAllTraiteursTools/${payed}`)
+        await axios.post(`/api/getAllTraiteursTools`, data)
       ).data;
       if (result.err) throw new Error(result.err);
       setTraiteurTools(result.response);
-      if (!payed) notPayed.current.checked = true;
     } catch (error) {
       alert(error.message);
     }
@@ -195,6 +224,7 @@ export default function traiteur() {
       const dateEnd = DateEnd.current.value;
       const targetClient = TargetClient.current.value;
       const advance = Advance.current.value;
+      const PaymentMethod = SelectedPaymentMethod;
       const data = {
         targetTraitreur,
         dateStart,
@@ -203,6 +233,7 @@ export default function traiteur() {
         targetClient,
         Totatl: FakeTotal,
         advance,
+        PaymentMethod
       };
 
       const result = await (
@@ -238,7 +269,7 @@ export default function traiteur() {
               ClientId: targetClient,
               Total: FakeTotal,
               Advance: advance || 0,
-              Payed: false,
+              PaymentMethod,
             };
 
             new_data.push(newElement);
@@ -455,6 +486,22 @@ export default function traiteur() {
                   <div>
                     <input type="datetime-local" ref={DateEnd} />
                   </div>
+                  <div>
+                  <select
+                    value={SelectedPaymentMethod}
+                    onChange={(e) => {
+                      setSelectedPaymentMethod(e.target.value);
+                    }}
+                  >
+                    {Object.keys(PaymentMethods).map((ele) => {
+                      return (
+                        <option value={ele} key={ele}>
+                          {PaymentMethods[ele]}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  </div>
                 </div>
               </div>
               <div className="table-pool">
@@ -553,6 +600,36 @@ export default function traiteur() {
                 <Image width={10} height={10} src="/imgs/filter.png" alt="" />
               </div>
             </div>
+            <div id="traiteurFilterX090909">
+              <div>
+                <label>البحث حسب تاريخ البدء</label>
+                <input
+                  type="date"
+                  className="salle"
+                  value={filterDateStart}
+                  onChange={(e) => setfilterDateStart(e.target.value)}
+                  style={{ width: "90%" }}
+                />
+              </div>
+              <div>
+                <label>البحث حسب تاريخ الانتهاء</label>
+                <input
+                  type="date"
+                  className="salle"
+                  value={filterDateEnd}
+                  onChange={(e) => setfilterDateEnd(e.target.value)}
+                  style={{ width: "90%" }}
+                />
+              </div>
+              <button
+                onClick={() =>
+                  getAllTraiteursTools({ start: filterDateStart, end: filterDateEnd })
+                }
+                style={{ alignSelf: "end", margin: "0px" }}
+              >
+                بحت
+              </button>
+            </div>
             <form>
               <div className="table-pool" style={{ overflow: "auto" }}>
                 <table className="table" id="TraiteurToolsTable">
@@ -562,7 +639,7 @@ export default function traiteur() {
                       <th>client name</th>
                       <th>total</th>
                       <th>avance</th>
-                      <th>payé</th>
+                      <th>payment method</th>
                       <th>date start</th>
                       <th>date end</th>
                       <th>actions</th>
@@ -588,7 +665,7 @@ export default function traiteur() {
                           </td>
                           <td>{item.Total}</td>
                           <td>{item.Advance ? item.Advance : 0}</td>
-                          <td> {item.Payed ? "payé" : "impayé"} </td>
+                          <td> {PaymentMethods[item.PaymentMethod]} </td>
                           <td style={{ fontSize: ".8rem" }}>
                             {item.dateStart}
                           </td>
@@ -618,29 +695,9 @@ export default function traiteur() {
                 </table>
               </div>
             </form>
-            <div className="filterTraiteurTools">
-              <div>
-                <label htmlFor="payed">Les événements sont payants</label>
-                <input
-                  type="radio"
-                  name="active"
-                  id="payed"
-                  onChange={() => getAllTraiteursTools(1)}
-                />
-              </div>
-              <div>
-                <label htmlFor="notPayed">
-                  Les événements ne sont pas payants
-                </label>
-                <input
-                  type="radio"
-                  name="active"
-                  id="notPayed"
-                  ref={notPayed}
-                  onChange={() => getAllTraiteursTools(0)}
-                />
-              </div>
-            </div>
+          </div>
+          <div>
+            <p id="PicinePool">{EventsTotal} dh</p>
           </div>
         </div>
       </div>

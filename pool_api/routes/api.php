@@ -43,7 +43,7 @@ Route::get("/getAllTraiteurs", [TraiteurController::class, "GetTraiteurs"]);
 Route::delete("/deleteTraiteur/{id}", [TraiteurController::class, "deleteTraiteur"]);
 Route::post("/updateTraiteur", [TraiteurController::class, "updateTraiteur"]);
 Route::post("/AddTraiteurTool", [TraiteurController::class, "AddTraiteurTool"]) -> middleware('traiteurIsExist');
-Route::get("/getAllTraiteursTools/{payed}", [TraiteurController::class, "getAllTraiteursTools"]);
+Route::post("/getAllTraiteursTools", [TraiteurController::class, "getAllTraiteursTools"]);
 Route::get("/getTargetTraiteurs/{id}", [TraiteurController::class, "getTargetTraiteurs"]);
 Route::delete("/deleteTraiteursTool/{id}", [TraiteurController::class, "deleteTraiteursTool"]);
 Route::post('/UpdateTraiteurTool', [TraiteurController::class, "UpdateTraiteurTool"]);

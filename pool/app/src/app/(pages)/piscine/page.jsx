@@ -13,6 +13,7 @@ export default function piscine() {
   const [Total, setTotal] = useState(0);
   const [DatePool, setDatePool] = useState("");
   const [Clients, setClients] = useState([]);
+  const [ClientsCount, setClientsCount] = useState(0);
   const [SelectedClient, setSelectedClient] = useState(null);
   const [SelectedPaymentMethod, setSelectedPaymentMethod] =
     useState("pay cash");
@@ -49,9 +50,11 @@ export default function piscine() {
   }, []);
 
   useEffect(() => {
+    setClientsCount(0)
     if (piscine.length) {
       getTotal();
     }
+
   }, [piscine]);
 
   const fetchPiscine = async (date = formattedDate) => {
@@ -184,6 +187,7 @@ export default function piscine() {
 
   const getTotal = () => {
     const listOfTotal = piscine.map((ele) => {
+      setClientsCount(prev => prev + ele.add_person);
       if (ele.poolDate === DatePool ? DatePool : formattedDate) {
         return ele.offer * ele.add_person;
       }
@@ -354,7 +358,10 @@ export default function piscine() {
             </table>
           </div>
           <div>
-            <p id="PicinePool">{Total} dh</p>
+            <p id="PicinePool" style={{ display: "flex", justifyContent: "center" }}>
+              <p style={{ margin: "0 20px 0 0" }}>عدد العملاء {ClientsCount} </p>
+              <p style={{ margin: "0 0 0 20px" }}>{Total} dh</p>
+            </p>
           </div>
         </div>
       </div>

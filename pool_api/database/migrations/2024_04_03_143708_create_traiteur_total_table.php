@@ -16,7 +16,7 @@ return new class extends Migration
             $table -> unsignedBigInteger("traiteur_id");
             $table -> double("Advance") -> nullable();
             $table -> double("Total");
-            $table -> boolean("Payed");
+            $table -> string("PaymentMethod", 35);
             $table->foreign('traiteur_id')->references('id')->on('traiteurs')->onDelete('cascade');
             $table->timestamps();
         });
