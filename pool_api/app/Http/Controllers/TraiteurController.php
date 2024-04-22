@@ -109,6 +109,7 @@ class TraiteurController extends Controller
                 $traiteur_total = new traiteur_total();
 
                 $traiteur_total -> traiteur_id = $targetTraitreur;
+                $traiteur_total -> ClientId = $targetClient;
                 $traiteur_total -> Advance = $advance;
                 $traiteur_total -> Total = $total;
                 $traiteur_total -> PaymentMethod = $PaymentMethod;

@@ -10,6 +10,7 @@ class traiteur_total extends Model
     use HasFactory;
 
     protected $fillable = [
+        'ClientId',
         'traiteur_id',
         'Advance',
         'Total',

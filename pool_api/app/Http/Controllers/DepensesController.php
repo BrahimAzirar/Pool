@@ -23,13 +23,24 @@ class DepensesController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
-            $result = Depenses::create([
-                'price' => $request->price,
-                'name' => $request->name,
-                'expenseDate' => $request->expenseDate
-            ]);
+            // $result = Depenses::create([
+            //     'price' => $request->price,
+            //     'persone_id' => $request->client_id,
+            //     'PaymentMethod' => $request->PaymentMethod,
+            //     'name' => $request->name,
+            //     'expenseDate' => $request->expenseDate
+            // ]);
 
-            return response()->json(["response" => $result->id]);
+            $calc = new Depenses();
+            $calc -> persone_id = ($request -> persone_id == 'اختر العميل' ? null : $request -> persone_id);
+            $calc -> PaymentMethod = $request -> PaymentMethod;
+            $calc -> price = $request -> price;
+            $calc -> name = $request -> name;
+            $calc -> expenseDate = $request -> expenseDate;
+
+            $calc -> save();
+
+            return response()->json(["response" => $calc->id]);
         } catch (\Exception $e) {
             Log::error("The error from DepensesController in store(): " . $e->getMessage());
             return response()->json(["err" => "An error in the server. try later"]);
@@ -39,6 +50,8 @@ class DepensesController extends Controller
     public function update(Request $request, Depenses $depense): JsonResponse
     {
         try {
+            $depense->persone_id = ($request -> persone_id == 'اختر العميل' ? null : $request -> persone_id);
+            $depense->PaymentMethod = $request -> PaymentMethod;
             $depense->price = $request->price;
             $depense->name = $request->name;
             $depense->expenseDate = $request->expenseDate;

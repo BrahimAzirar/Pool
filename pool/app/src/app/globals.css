@@ -15,6 +15,10 @@
   list-style: none;
 }
 
+iframe[id="noop"] {
+  display: none;
+}
+
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -40,7 +44,7 @@ a {
 
 .main {
   width: 100%;
-  height: 100vh;
+  height: 100%;
   display: grid;
   grid-template-columns: 200px auto 200px;
   background: #0D0E13;
@@ -748,7 +752,16 @@ table tbody tr {
   margin-bottom: 20px;
 }
 
-#Cafe-bottom-content > div:first-of-type {
+.list-personel{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+  
+  #Cafe-bottom-content > div:first-of-type {
   width: 80%;
   display: flex;
   justify-content: space-between;

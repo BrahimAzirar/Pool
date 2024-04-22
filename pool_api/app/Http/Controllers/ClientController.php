@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CalculPreson;
 use App\Models\Client;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ClientController extends Controller
@@ -22,7 +24,11 @@ class ClientController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+
+        DB::beginTransaction();
+
         try {
+
             $client = new Client();
 
             $client -> ClientCIN = $request -> input("ClientCIN");
@@ -35,8 +41,18 @@ class ClientController extends Controller
 
             $client -> save();
 
+            $calcul_personel = new CalculPreson();
+
+            $calcul_personel -> persone_id = $client->id;
+
+            $calcul_personel -> save();
+
+            DB::commit();
+
             return response() -> json(["response" => $client -> id]);
+
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error("The error in ClientController => store: ". $e->getMessage());
             return response() -> json(["err" => "An error in the server try later"]);
         }

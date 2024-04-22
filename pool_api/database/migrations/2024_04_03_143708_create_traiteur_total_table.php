@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('traiteur_totals', function (Blueprint $table) {
             $table->id();
+            $table -> unsignedBigInteger("ClientId");
             $table -> unsignedBigInteger("traiteur_id");
             $table -> double("Advance") -> nullable();
             $table -> double("Total");
             $table -> string("PaymentMethod", 35);
             $table->foreign('traiteur_id')->references('id')->on('traiteurs')->onDelete('cascade');
+            $table->foreign('ClientId')->references('id')->on('clients')->onDelete('cascade');
             $table->timestamps();
         });
     }

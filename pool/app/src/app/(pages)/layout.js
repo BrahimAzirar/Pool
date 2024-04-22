@@ -42,13 +42,13 @@ export default function RootLayout({ children }) {
         <body>
           <div className="main">
             <div className="part-2">
-              <Link href={"/"}>
+              <Link href={"/tableau_de_bord"}>
                 <img src="imgs/icon.png" alt="" className="icon" />
               </Link>
               <ul>
                 <li>
                   <img src="imgs/dashboard.png" alt="" />
-                  <Link href={"/"}>Tableau de bord</Link>
+                  <Link href={"/tableau_de_bord"}>Tableau de bord</Link>
                 </li>
                 <li>
                   <img src="imgs/users-solid.svg" alt="" />
@@ -73,6 +73,10 @@ export default function RootLayout({ children }) {
                 <li>
                   <img src="imgs/cafe.png" alt="" />
                   <Link href={"/cafe"}>Cafe</Link>
+                </li>
+                <li>
+                  <img src="imgs/users-solid.svg" alt="" />
+                  <Link href={"/list_persone"}>Liste presone</Link>
                 </li>
                 <li>
                   <img src="imgs/traiteur.png" alt="" />

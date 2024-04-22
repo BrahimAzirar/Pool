@@ -403,7 +403,7 @@ export default function traiteur() {
           </form>
           <div className="bottom-content">
             <div className="head-table">
-              <p>List Des Traiteurs :</p>
+              <p>List Des Events :</p>
               <div className="filter">
                 Filter
                 <Image width={10} height={10} src="/imgs/filter.png" />
@@ -414,7 +414,7 @@ export default function traiteur() {
                 <thead>
                   <tr>
                     <th style={{ width: "10%" }}>Id</th>
-                    <th style={{ width: "60%" }}>Traiteur name</th>
+                    <th style={{ width: "60%" }}>Events name</th>
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -462,7 +462,7 @@ export default function traiteur() {
                 <div>
                   <div>
                     <select ref={TargetTraiteur}>
-                      <option value={null}>Choose the party name</option>
+                      <option value={null}>Choose the event name</option>
                       {RegesteredTraiteurs.map((ele) => {
                         return <option value={ele.id}>{ele.Name}</option>;
                       })}
@@ -635,7 +635,7 @@ export default function traiteur() {
                 <table className="table" id="TraiteurToolsTable">
                   <thead>
                     <tr>
-                      <th>traiteur</th>
+                      <th>event</th>
                       <th>client name</th>
                       <th>total</th>
                       <th>avance</th>

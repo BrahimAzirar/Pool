@@ -7,12 +7,21 @@ import React from "react";
 export default function depenses() {
   const conponentPDF = useRef();
   const TargetForm = useRef();
+  const [Clients, setClients] = useState([]);
   const [depenses, setDepenses] = useState([]);
   const [price, setPrice] = useState(0);
   const [name, setName] = useState("");
   const [depensesId, setDepensesId] = useState(0);
   const [ExpenseDate, setExpenseDate] = useState("");
   const [UpdateExpense, setUpdateExpense] = useState(false);
+  const [SelectedClient, setSelectedClient] = useState("");
+  const [SelectedPaymentMethod, setSelectedPaymentMethod] = useState("pay cash");
+  const PaymentMethods = {
+    "pay cash": "ادفع نقدا",
+    "Payment by check": "الدفع عن طريق الشيكات",
+    "successive payments": "الدفعات المتتالية",
+    "Credit": "كريدي",
+  };
 
   useEffect(() => {
     const fetchDepense = async () => {
@@ -24,7 +33,18 @@ export default function depenses() {
         alert(error.message);
       }
     };
+
+    const GetAllClients = async () => {
+      try {
+        const result = await (await axios.get("/api/client")).data;
+        if (result.err) throw new Error(result.err);
+        setClients(result.response);
+      } catch (error) {
+        alert(error.message);
+      }
+    };
   
+    GetAllClients();
     fetchDepense();
   }, []);
 
@@ -145,6 +165,47 @@ export default function depenses() {
                 onChange={(e) => setExpenseDate(e.target.value)}
               />
             </div>
+            <div>
+              <select
+                style={{ marginBottom: "15px" }}
+                value={SelectedClient}
+                onChange={(e) =>
+                  setSelectedClient(() => {
+                    if (e.target.value == "اختر العميل") {
+                      setSelectedPaymentMethod("pay cash");
+                      return null;
+                    };
+                    return e.target.value;
+                  })
+                }
+                name="persone_id"
+              >
+                <option value={null}>اختر العميل</option>
+                {Clients.map((ele) => {
+                  return (
+                    <option value={ele.id} key={ele.id}>
+                      {ele.FirstName} {ele.LastName}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+            <div>
+              <select
+                className={SelectedClient ? "" : "desableSelect"}
+                value={SelectedPaymentMethod}
+                onChange={e => setSelectedPaymentMethod(e.target.value)}
+                name="PaymentMethod"
+              >
+                {Object.keys(PaymentMethods).map((ele) => {
+                  return (
+                    <option value={ele} key={ele}>
+                      {PaymentMethods[ele]}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
           </div>
           {UpdateExpense ? (
             <input
@@ -188,7 +249,10 @@ export default function depenses() {
                           setDepensesId(item.id);
                           setName(item.name);
                           setPrice(item.price);
+                          setSelectedClient
                           setExpenseDate(item.expenseDate);
+                          setSelectedPaymentMethod(item.PaymentMethod);
+                          setSelectedClient(item.persone_id);
                         }}
                       >
                         update

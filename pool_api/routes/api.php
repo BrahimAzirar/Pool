@@ -4,7 +4,9 @@ use App\Http\Controllers\AdminController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CafeController;
+use App\Http\Controllers\CalculPresonController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepensesController;
 use App\Http\Controllers\PoolController;
 use App\Http\Controllers\SalleController;
@@ -30,6 +32,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::apiResource("cafes", CafeController::class);
 Route::apiResource("depenses", DepensesController::class);
+Route::apiResource("calcul_presons", CalculPresonController::class);
+Route::apiResource("dashboard", DashboardController::class);
 Route::apiResource("tools", ToolController::class);
 Route::apiResource("salles", SalleController::class);
 Route::apiResource("pools", PoolController::class);
