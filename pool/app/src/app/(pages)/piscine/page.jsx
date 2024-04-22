@@ -20,7 +20,7 @@ export default function piscine() {
     "pay cash": "ادفع نقدا",
     "Payment by check": "الدفع عن طريق الشيكات",
     "successive payments": "الدفعات المتتالية",
-    Credit: "كريدي",
+    "Credit": "كريدي",
   };
 
   const conponentPDF = useRef();

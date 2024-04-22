@@ -28,6 +28,16 @@ export default function Home() {
             <p className="money">20000,00 DH</p>
             <p className="name">Benefice Net</p>
           </div>
+          <div className="card">
+            <img className="icon-card" src="imgs/depenses_icon.png" alt="" />
+            <p className="money">20000,00 DH</p>
+            <p className="name">Depeneses</p>
+          </div>
+          <div className="card">
+            <img className="icon-card" src="imgs/benefice.png" alt="" />
+            <p className="money">20000,00 DH</p>
+            <p className="name">Benefice Net</p>
+          </div>
         </div>
       </div>
     </div>

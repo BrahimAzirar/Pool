@@ -15,6 +15,10 @@
   list-style: none;
 }
 
+iframe[id="noop"] {
+  display: none;
+}
+
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -40,7 +44,7 @@ a {
 
 .main {
   width: 100%;
-  height: 100vh;
+  height: 100%;
   display: grid;
   grid-template-columns: 200px auto 200px;
   background: #0D0E13;
@@ -246,12 +250,12 @@ input.salle {
 #TraiteurActions>div:first-of-type {
   width: 100%;
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   margin: 10px 0;
 }
 
 #TraiteurActions>div:first-of-type>div {
-  width: calc(90% / 4);
+  width: calc(98% / 5);
 }
 
 #TraiteurActions>div:first-of-type>div select,
@@ -284,7 +288,8 @@ input[type="button"],
 .bottom-content > div:last-child button,
 #Picine-bottom-content > div:first-child button,
 #LoginPage form > div:not(:first-of-type) button,
-#SallesX987438 > div:first-of-type button {
+#SallesX987438 > div:first-of-type button,
+#traiteurFilterX090909 button {
   cursor: pointer;
   padding: 5px 10px;
   background: #56B9E1;
@@ -737,4 +742,20 @@ table tbody tr {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+#traiteurFilterX090909 {
+  width: 80%;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.list-personel{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
 }

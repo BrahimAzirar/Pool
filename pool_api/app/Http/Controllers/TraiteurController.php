@@ -82,6 +82,7 @@ class TraiteurController extends Controller
             $targetTraitreur = $request->input('targetTraitreur');
             $targetClient = $request->input('targetClient');
             $total = $request -> input("Totatl");
+            $PaymentMethod = $request -> input("PaymentMethod");
             $advance = ($request -> input("advance") ? $request -> input("advance") : 0);
 
             foreach ($Traiteurs as $item) {
@@ -105,12 +106,15 @@ class TraiteurController extends Controller
                 $old -> Total += $total;
                 $old -> save();
             } else {
-                traiteur_total::create([
-                    "traiteur_id" => $targetTraitreur,
-                    "Advance" => $advance,
-                    "Total" => $total,
-                    "Payed" => false
-                ]);
+                $traiteur_total = new traiteur_total();
+
+                $traiteur_total -> traiteur_id = $targetTraitreur;
+                $traiteur_total -> ClientId = $targetClient;
+                $traiteur_total -> Advance = $advance;
+                $traiteur_total -> Total = $total;
+                $traiteur_total -> PaymentMethod = $PaymentMethod;
+
+                $traiteur_total -> save();
             };
 
             return response()->json(["response" => true]);
@@ -120,19 +124,67 @@ class TraiteurController extends Controller
         }
     }
 
-    function getAllTraiteursTools(int $payed): JsonResponse
+    function getAllTraiteursTools(Request $request): JsonResponse
     {
         try {
-            $result = Traiteur::select('traiteur_tools.traiteur_id', 'traiteur_tools.dateStart', 'traiteur_tools.dateEnd', 'traiteur_tools.ClientId', 'traiteur_totals.Total', 'traiteur_totals.Advance', 'traiteur_totals.Payed')
-                ->join('traiteur_tools', 'traiteurs.id', '=', 'traiteur_tools.traiteur_id')
-                ->join('traiteur_totals', 'traiteurs.id', '=', 'traiteur_totals.traiteur_id')
-                ->join('clients', 'traiteur_tools.ClientId', '=', 'clients.id')
-                ->where('traiteur_tools.qty', '<>', 'traiteur_tools.returnedQty')
-                ->where('traiteur_totals.Payed', '=', (int) $payed)
-                ->distinct()
-                ->get();
+            $now = $request -> now;
+            $start = $request -> start;
+            $end = $request -> end;
 
-            return response() -> json(["response" => $result]);
+            if ($now) {
+                $result = Traiteur::select('traiteur_tools.traiteur_id', 'traiteur_tools.dateStart', 'traiteur_tools.dateEnd', 'traiteur_tools.ClientId', 'traiteur_totals.Total', 'traiteur_totals.Advance', 'traiteur_totals.PaymentMethod')
+                    ->join('traiteur_tools', 'traiteurs.id', '=', 'traiteur_tools.traiteur_id')
+                    ->join('traiteur_totals', 'traiteurs.id', '=', 'traiteur_totals.traiteur_id')
+                    ->join('clients', 'traiteur_tools.ClientId', '=', 'clients.id')
+                    ->where(function ($query) use ($now) {
+                        $query->whereDate('traiteur_tools.dateStart', '=', $now)
+                            ->orWhereDate('traiteur_tools.dateEnd', '=', $now);
+                    })
+                    ->distinct()
+                    ->get();
+
+                return response() -> json(["response" => $result]);
+            }
+            elseif ($start && $end) {
+                $result = Traiteur::select('traiteur_tools.traiteur_id', 'traiteur_tools.dateStart', 'traiteur_tools.dateEnd', 'traiteur_tools.ClientId', 'traiteur_totals.Total', 'traiteur_totals.Advance', 'traiteur_totals.PaymentMethod')
+                    ->join('traiteur_tools', 'traiteurs.id', '=', 'traiteur_tools.traiteur_id')
+                    ->join('traiteur_totals', 'traiteurs.id', '=', 'traiteur_totals.traiteur_id')
+                    ->join('clients', 'traiteur_tools.ClientId', '=', 'clients.id')
+                    ->where(function ($query) use ($start, $end) {
+                        $query->whereDate('traiteur_tools.dateStart', '=', $start)
+                            ->WhereDate('traiteur_tools.dateEnd', '=', $end);
+                    })
+                    ->distinct()
+                    ->get();
+
+                return response() -> json(["response" => $result]);
+            }
+            elseif ($start) {
+                $result = Traiteur::select('traiteur_tools.traiteur_id', 'traiteur_tools.dateStart', 'traiteur_tools.dateEnd', 'traiteur_tools.ClientId', 'traiteur_totals.Total', 'traiteur_totals.Advance', 'traiteur_totals.PaymentMethod')
+                    ->join('traiteur_tools', 'traiteurs.id', '=', 'traiteur_tools.traiteur_id')
+                    ->join('traiteur_totals', 'traiteurs.id', '=', 'traiteur_totals.traiteur_id')
+                    ->join('clients', 'traiteur_tools.ClientId', '=', 'clients.id')
+                    ->where(function ($query) use ($start) {
+                        $query->whereDate('traiteur_tools.dateStart', '=', $start);
+                    })
+                    ->distinct()
+                    ->get();
+
+                return response() -> json(["response" => $result]);
+            }
+            else {
+                $result = Traiteur::select('traiteur_tools.traiteur_id', 'traiteur_tools.dateStart', 'traiteur_tools.dateEnd', 'traiteur_tools.ClientId', 'traiteur_totals.Total', 'traiteur_totals.Advance', 'traiteur_totals.PaymentMethod')
+                    ->join('traiteur_tools', 'traiteurs.id', '=', 'traiteur_tools.traiteur_id')
+                    ->join('traiteur_totals', 'traiteurs.id', '=', 'traiteur_totals.traiteur_id')
+                    ->join('clients', 'traiteur_tools.ClientId', '=', 'clients.id')
+                    ->where(function ($query) use ($end) {
+                        $query->whereDate('traiteur_tools.dateEnd', '=', $end);
+                    })
+                    ->distinct()
+                    ->get();
+
+                return response() -> json(["response" => $result]);
+            }
         } catch (\Exception $e) {
             Log::error("The error in TraiteurController => getAllTraiteursTools: " . $e->getMessage());
             return response()->json(["err" => "An error occurred on the server. Please try again later."], 500);

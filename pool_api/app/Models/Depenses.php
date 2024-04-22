@@ -11,5 +11,5 @@ class Depenses extends Model
 
     protected $table = "depenses";
 
-    protected $fillable = ["name", "price", "expenseDate"];
+    protected $fillable = ["name", "persone_id", "payement_method", "price", "expenseDate"];
 }

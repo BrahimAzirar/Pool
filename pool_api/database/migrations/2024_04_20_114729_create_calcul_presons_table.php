@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('depenses', function (Blueprint $table) {
+        Schema::create('calcul_presons', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('persone_id') -> nullable();
-            $table->string("name");
-            $table->double("price");
-            $table -> date("expenseDate");
-            $table -> string("PaymentMethod", 35);
+            $table->unsignedBigInteger('persone_id');
+            $table->double('credit')->default(0);
+            $table->double('cash')->default(0);
+            $table->double('credit_for_me')->default(0);
+            $table->double('credit_for_him')->default(0);
             $table->foreign('persone_id')->references('id')->on('clients')->onDelete('cascade');
             $table->timestamps();
         });
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('depenses');
+        Schema::dropIfExists('calcul_presons');
     }
 };

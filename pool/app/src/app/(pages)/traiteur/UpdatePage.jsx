@@ -9,7 +9,6 @@ export default function UpdateTraiteur_Tool({
   callback1,
   callback2,
 }) {
-
   const [Advance, setAdvance] = useState(data.Advance);
   const [DateStart, setDateStart] = useState(data.dateStart);
   const [DateEnd, setDateEnd] = useState(data.dateEnd);
@@ -18,10 +17,12 @@ export default function UpdateTraiteur_Tool({
   const paid = useRef();
   const NotPaid = useRef();
 
-  useEffect(() => {
-    if (data.Payed) paid.current.checked = true;
-    else NotPaid.current.checked = true;
-  }, []);
+  const PaymentMethods = {
+    "pay cash": "ادفع نقدا",
+    "Payment by check": "الدفع عن طريق الشيكات",
+    "successive payments": "الدفعات المتتالية",
+    Credit: "كريدي",
+  };
 
   const UpdateData = async (e) => {
     e.preventDefault();
@@ -47,17 +48,17 @@ export default function UpdateTraiteur_Tool({
               return ele.traiteur_id !== data.traiteur_id;
             });
           } else {
-            return prev.map(ele => {
+            return prev.map((ele) => {
               if (ele.traiteur_id == data.traiteur_id) {
                 ele.ClientId = convertedData.ClientId;
                 ele.Advance = convertedData.Advance;
                 ele.dateStart = convertedData.dateStart;
                 ele.dateEnd = convertedData.dateEnd;
-              };
+              }
 
               return ele;
             });
-          };
+          }
         });
         callback1(false);
       }
@@ -113,15 +114,16 @@ export default function UpdateTraiteur_Tool({
             onChange={(e) => setDateEnd(e.target.value)}
           />
         </div>
-        <div className="filterTraiteurTools" style={{ marginTop: "0" }}>
-          <div>
-            <label>Est payé</label>
-            <input type="radio" name="payment" ref={paid} onChange={() => setPayed(1)}/>
-          </div>
-          <div>
-            <label>N'est pas payé</label>
-            <input type="radio" name="payment" ref={NotPaid} onChange={() => setPayed(0)}/>
-          </div>
+        <div>
+          <select>
+            {Object.keys(PaymentMethods).map((ele) => {
+              return (
+                <option value={ele} key={ele}>
+                  {PaymentMethods[ele]}
+                </option>
+              );
+            })}
+          </select>
         </div>
         <div>
           <button onClick={UpdateData}>Update</button>
