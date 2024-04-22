@@ -51,7 +51,7 @@ export default function grand_salle() {
     setTotal(0);
     if (salles.length) {
       salles.forEach((ele) => {
-        setTotal((prev) => prev + ele.price);
+        setTotal((prev) => prev + parseInt(ele.price));
       });
     }
   }, [salles]);

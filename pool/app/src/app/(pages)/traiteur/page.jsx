@@ -665,7 +665,7 @@ export default function traiteur() {
                           </td>
                           <td>{item.Total}</td>
                           <td>{item.Advance ? item.Advance : 0}</td>
-                          <td> {item.PaymentMethod} </td>
+                          <td> {PaymentMethods[item.PaymentMethod]} </td>
                           <td style={{ fontSize: ".8rem" }}>
                             {item.dateStart}
                           </td>

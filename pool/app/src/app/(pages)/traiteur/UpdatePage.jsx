@@ -12,10 +12,9 @@ export default function UpdateTraiteur_Tool({
   const [Advance, setAdvance] = useState(data.Advance);
   const [DateStart, setDateStart] = useState(data.dateStart);
   const [DateEnd, setDateEnd] = useState(data.dateEnd);
+  const [PaymentMethod, setPaymentMethod] = useState(data.PaymentMethod);
   const [Payed, setPayed] = useState(data.Payed);
   const TargetForm = useRef();
-  const paid = useRef();
-  const NotPaid = useRef();
 
   const PaymentMethods = {
     "pay cash": "ادفع نقدا",
@@ -30,7 +29,7 @@ export default function UpdateTraiteur_Tool({
     try {
       const req_data = new FormData(TargetForm.current);
       req_data.append("id", data.traiteur_id);
-      req_data.append("Payed", Payed);
+      req_data.append("PaymentMethod", PaymentMethod);
 
       const result = await (
         await axios.post(
@@ -42,24 +41,18 @@ export default function UpdateTraiteur_Tool({
       if (result.err) throw new Error(result.err);
       if (result.response) {
         const convertedData = Object.fromEntries(req_data);
-        callback2((prev) => {
-          if (data.Payed !== Payed) {
-            return prev.filter((ele) => {
-              return ele.traiteur_id !== data.traiteur_id;
-            });
-          } else {
-            return prev.map((ele) => {
-              if (ele.traiteur_id == data.traiteur_id) {
-                ele.ClientId = convertedData.ClientId;
-                ele.Advance = convertedData.Advance;
-                ele.dateStart = convertedData.dateStart;
-                ele.dateEnd = convertedData.dateEnd;
-              }
+        callback2(prev => prev.map(ele => {
+          if (ele.traiteur_id == data.traiteur_id) {
+            ele.ClientId = convertedData.ClientId;
+            ele.Advance = convertedData.Advance;
+            ele.dateStart = convertedData.dateStart;
+            ele.dateEnd = convertedData.dateEnd;
+            ele.PaymentMethod = convertedData.PaymentMethod;
+          };
 
-              return ele;
-            });
-          }
-        });
+          return ele;
+        }));
+
         callback1(false);
       }
     } catch (error) {
@@ -115,7 +108,10 @@ export default function UpdateTraiteur_Tool({
           />
         </div>
         <div>
-          <select>
+          <select
+            value={PaymentMethod}
+            onChange={(e) => setPaymentMethod(e.target.value)}
+          >
             {Object.keys(PaymentMethods).map((ele) => {
               return (
                 <option value={ele} key={ele}>

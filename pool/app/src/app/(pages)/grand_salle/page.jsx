@@ -52,7 +52,7 @@ export default function grand_salle() {
     setTotal(0);
     if (salles.length) {
       salles.forEach((ele) => {
-        setTotal((prev) => prev + ele.price);
+        setTotal((prev) => prev + parseInt(ele.price));
       });
     }
   }, [salles]);
@@ -79,10 +79,12 @@ export default function grand_salle() {
     e.preventDefault();
 
     try {
-      if (!SelectedClient) throw new Error("اختر عميلاً من القائمة");
       const data = new FormData(TargetForm.current);
       data.append("ClientId", SelectedClient);
       data.append("_method", "PUT");
+
+      if (Object.values(Object.fromEntries(data)).values().some(ele => ele == ''))
+        throw new Error("Some feilds is empty");
 
       const result = await (
         await axios.post(`/api/salles/${sallesId}`, data)
@@ -116,10 +118,12 @@ export default function grand_salle() {
     e.preventDefault();
 
     try {
-      if (!SelectedClient) throw new Error("اختر عميلاً من القائمة");
+      // if (!SelectedClient) throw new Error("اختر عميلاً من القائمة");
       const data = new FormData(TargetForm.current);
       data.append("ClientId", SelectedClient);
       data.append("is_salle", 0);
+      if (Object.values(Object.fromEntries(data)).values().some(ele => ele == ''))
+        throw new Error("Some feilds is empty");
       const result = await (await axios.post("/api/salles", data)).data;
       if (result.err) throw new Error(result.err);
       if (result.response) {

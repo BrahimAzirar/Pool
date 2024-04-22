@@ -9,13 +9,12 @@ use Illuminate\Support\Facades\Log;
 
 class CafeController extends Controller
 {
-
-    public function index(): JsonResponse
-    {
+    function show($date): JsonResponse {
         try {
-            return response()->json(["response" => Cafe::latest()->get()]);
+            $data = Cafe::where("Date", $date) -> get();
+            return response() -> json(["response" => $data]);
         } catch (\Exception $e) {
-            Log::error("The error from CafeController in index(): " . $e -> getMessage());
+            Log::error("The error from PoolController in show(): ". $e -> getMessage());
             return response() -> json(["err" => "An error in the server. try later"]);
         }
     }

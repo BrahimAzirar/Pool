@@ -315,7 +315,7 @@ class TraiteurController extends Controller
         $Advance = $request->input("Advance");
         $dateStart = $request->input("dateStart");
         $dateEnd = $request->input("dateEnd");
-        $payment = $request->input("Payed");
+        $PaymentMethod = $request->input("PaymentMethod");
 
         traiteur_tools::where('traiteur_id', $id)->update([
             'ClientId' => $ClientId,
@@ -325,11 +325,9 @@ class TraiteurController extends Controller
 
         $total = traiteur_total::where('traiteur_id', $id)->first();
 
-        Log::alert($payment);
-
         $total->Total = $total->Total + $total->Advance - $Advance;
         $total->Advance = $Advance;
-        $total->Payed = $payment;
+        $total->PaymentMethod = $PaymentMethod;
         $total->save();
 
         DB::commit();

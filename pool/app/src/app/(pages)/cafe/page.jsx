@@ -10,23 +10,42 @@ export default function cafe() {
   const [cafeData, setCafe] = useState([]);
   const [price, setPrice] = useState(0);
   const [EmployeName, setEmployeName] = useState("");
-  const [Date, setDate] = useState("");
+  const [date, setDate] = useState("");
   const [Update, setUpdate] = useState(false);
   const [cafeDataId, setCafeId] = useState(0);
+  const [Total, setTotal] = useState(0);
+  const [TargetDate, setTargetDate] = useState('');
+  const DATE = new Date();
+  const year = DATE.getFullYear();
+  const month = DATE.getMonth() + 1;
+  const day = DATE.getDate();
+  const formattedDate = `${year}-${month.toString().padStart(2, "0")}-${day
+    .toString()
+    .padStart(2, "0")}`;
 
   useEffect(() => {
-    const fetchCafe = async () => {
-      try {
-        const result = await (await axios.get("/api/cafes")).data;
-        if (result.err) throw new Error(result.err);
-        setCafe(result.response);
-      } catch (error) {
-        alert(error.message);
-      }
-    };
-
-    fetchCafe();
+    fetchCafe(formattedDate);
   }, []);
+
+  useEffect(() => {
+    setTotal(0);
+    
+    if (cafeData.length) {
+      cafeData.forEach(ele => {
+        setTotal(prev => prev + parseInt(ele.price));
+      });
+    }
+  }, [cafeData]);
+
+  const fetchCafe = async (date) => {
+    try {
+      const result = await (await axios.get(`/api/cafes/${date}`)).data;
+      if (result.err) throw new Error(result.err);
+      setCafe(result.response);
+    } catch (error) {
+      alert(error.message);
+    };
+  };
 
   const editPrice = async (e) => {
     e.preventDefault();
@@ -133,7 +152,7 @@ export default function cafe() {
                 type="date"
                 className="salle"
                 name="Date"
-                value={Date}
+                value={date}
                 onChange={(e) => setDate(e.target.value)}
               />
             </div>
@@ -144,8 +163,18 @@ export default function cafe() {
               <input type="submit" onClick={AddCafee} />
           }
         </form>
-        <div className="bottom-content">
-          <input onClick={generatePDF} type="button" value="PDF" />
+        <div className="bottom-content" id="Cafe-bottom-content">
+          <div>
+            <input onClick={generatePDF} type="button" value="PDF" style={{ margin: "0" }}/>
+            <input
+              className="salle"
+              type="date"
+              style={{ width: "40%" }}
+              value={TargetDate}
+              onChange={e => setTargetDate(e.target.value)}
+            />
+            <button style={{ margin: "0" }} onClick={() => fetchCafe(TargetDate)}>calc total</button>
+          </div>
           <div className="table-pool">
             <table class="table" ref={conponentPDF}>
               <thead>
@@ -185,6 +214,9 @@ export default function cafe() {
               </tbody>
             </table>
           </div>
+        </div>
+        <div>
+          <p id="PicinePool">{Total} dh</p>
         </div>
       </div>
     </div>
