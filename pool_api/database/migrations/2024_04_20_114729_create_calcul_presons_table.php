@@ -16,8 +16,12 @@ return new class extends Migration
             $table->unsignedBigInteger('persone_id');
             $table->double('credit')->default(0);
             $table->double('cash')->default(0);
-            $table->double('credit_for_me')->default(0);
+            $table->double('credit_client')->default(0);
+            $table->double('credit_fournisseuse')->default(0);
+            $table->double('borrow_me')->default(0);
             $table->double('credit_for_him')->default(0);
+            $table->double('khlstou')->default(0);
+            $table->double('a_paye')->default(0);
             $table->foreign('persone_id')->references('id')->on('clients')->onDelete('cascade');
             $table->timestamps();
         });

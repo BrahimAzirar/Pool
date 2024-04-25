@@ -31,7 +31,6 @@ export default function traiteur() {
   const PaymentMethods = {
     "pay cash": "ادفع نقدا",
     "Payment by check": "الدفع عن طريق الشيكات",
-    "successive payments": "الدفعات المتتالية",
     "Credit": "كريدي",
   };
 

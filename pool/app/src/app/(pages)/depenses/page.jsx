@@ -19,7 +19,6 @@ export default function depenses() {
   const PaymentMethods = {
     "pay cash": "ادفع نقدا",
     "Payment by check": "الدفع عن طريق الشيكات",
-    "successive payments": "الدفعات المتتالية",
     "Credit": "كريدي",
   };
 
@@ -166,6 +165,7 @@ export default function depenses() {
               />
             </div>
             <div>
+              <p>Choose the client</p>
               <select
                 style={{ marginBottom: "15px" }}
                 value={SelectedClient}
@@ -191,6 +191,7 @@ export default function depenses() {
               </select>
             </div>
             <div>
+              <p>payment method</p>
               <select
                 className={SelectedClient ? "" : "desableSelect"}
                 value={SelectedPaymentMethod}

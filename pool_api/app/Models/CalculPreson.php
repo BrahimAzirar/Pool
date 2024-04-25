@@ -12,6 +12,6 @@ class CalculPreson extends Model
 
     protected $table = "calcul_presons";
 
-    protected $fillable = ["persone_id", "credit", "cash", "credit_for_me", "credit_for_him"];
+    protected $fillable = ["persone_id", "credit", "cash", "khlstou", "credit_client", "credit_fournisseuse", "a_paye", "borrow_me", "credit_for_him"];
 
 }

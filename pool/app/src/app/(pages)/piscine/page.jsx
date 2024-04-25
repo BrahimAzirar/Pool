@@ -20,7 +20,6 @@ export default function piscine() {
   const PaymentMethods = {
     "pay cash": "ادفع نقدا",
     "Payment by check": "الدفع عن طريق الشيكات",
-    "successive payments": "الدفعات المتتالية",
     "Credit": "كريدي",
   };
 
@@ -187,7 +186,7 @@ export default function piscine() {
 
   const getTotal = () => {
     const listOfTotal = piscine.map((ele) => {
-      setClientsCount(prev => prev + ele.add_person);
+      setClientsCount(prev => prev + parseInt(ele.add_person));
       if (ele.poolDate === DatePool ? DatePool : formattedDate) {
         return ele.offer * ele.add_person;
       }
